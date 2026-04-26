@@ -1,0 +1,48 @@
+# pyproject.toml
+
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "freakquery"
+version = "3.0.0"
+description = "Template Query Engine for PsychonautJournal-style logs"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [
+  { name = "NDM4" }
+]
+keywords = [
+  "query",
+  "templating",
+  "logs",
+  "analytics",
+  "freaklog"
+]
+
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent"
+]
+
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/NDM4/freakquery"
+Repository = "https://github.com/NDM4/freakquery"
+
+[project.scripts]
+freakquery = "freakquery.cli:main"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+include = ["freakquery*"]
+
+[tool.setuptools.package-data]
+src = ["*.toml"]

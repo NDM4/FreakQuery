@@ -1,0 +1,68 @@
+# freakquery/config.toml
+
+[core]
+name = "freakquery"
+version = "3.0.0"
+default_format = "text"
+
+[render]
+separator = ", "
+parens = true
+dose = true
+unit = true
+labels = true
+count = false
+percent = true
+compact = false
+time = false
+ratio_under_one = "<1%"
+
+[fields]
+substance = ["substance", "substanceName", "name", "drug"]
+route = ["route", "roa", "administrationRoute", "adminRoute"]
+site = ["site", "administrationSite", "bodySite", "siteName"]
+dose = ["dose", "amount", "quantity"]
+unit = ["unit", "units"]
+time = ["time", "creationDate", "timestamp", "date"]
+
+[aliases.route]
+iv = "intravenous"
+inject = "intravenous"
+injected = "intravenous"
+intravenous = "intravenous"
+
+oral = "oral"
+po = "oral"
+swallowed = "oral"
+
+insufflated = "intranasal"
+snorted = "intranasal"
+snort = "intranasal"
+nasal = "intranasal"
+intranasal = "intranasal"
+
+smoked = "vaporized"
+vaped = "vaporized"
+vapourized = "vaporized"
+vaporized = "vaporized"
+
+rectal = "intrarectal"
+boof = "intrarectal"
+boofed = "intrarectal"
+intrarectal = "intrarectal"
+
+sublingual = "sublingual"
+transdermal = "transdermal"
+
+[aliases.site]
+"l nostril" = "left nostril"
+"left nostril" = "left nostril"
+
+"r nostril" = "right nostril"
+"right nostril" = "right nostril"
+
+"both nose" = "both nostrils"
+"both nostrils" = "both nostrils"
+
+"left hand" = "left dorsal hand"
+"right hand" = "right dorsal hand"
