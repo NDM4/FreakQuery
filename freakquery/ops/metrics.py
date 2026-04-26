@@ -1,6 +1,7 @@
-# src/ops/metrics.py
+# freakquery/ops/metrics.py
 
 from collections import Counter
+import time
 
 from freakquery.registry.aliases import (
     norm,
@@ -9,6 +10,10 @@ from freakquery.registry.aliases import (
 )
 
 from freakquery.config import get
+
+
+def tag_norm(x):
+    return str(x).strip().lower()
 
 
 def pct(part, total):
@@ -27,10 +32,7 @@ def pct(part, total):
 
 
 def top_n(items, n):
-    if not isinstance(
-        n,
-        int,
-    ):
+    if not isinstance(n, int):
         return items
 
     if n <= 0:
@@ -40,6 +42,9 @@ def top_n(items, n):
 
 
 def row_get(row, key):
+    if not isinstance(row, dict):
+        return None
+
     for wanted in field_keys(key):
         nw = norm(wanted)
 
@@ -50,223 +55,243 @@ def row_get(row, key):
     return None
 
 
-def apply_metrics(
-    rows,
-    plan,
-    ctx,
-):
+def human_since(ms):
+    seconds = ms // 1000
+
+    if seconds < 60:
+        return f"{seconds}s"
+
+    minutes = seconds // 60
+
+    if minutes < 60:
+        return f"{minutes}m {seconds % 60}s"
+
+    hours = minutes // 60
+
+    if hours < 24:
+        return f"{hours}h {minutes % 60}m"
+
+    days = hours // 24
+
+    if days < 30:
+        return f"{days}d {hours % 24}h"
+
+    months = days // 30
+
+    if months < 12:
+        return f"{months}mo {days % 30}d"
+
+    years = days // 365
+    return f"{years}y {(days % 365)//30}mo"
+
+
+def resolve_metric(plan):
+    known = {
+        "count",
+        "first",
+        "last",
+        "since",
+        "dose",
+        "substance",
+        "top_substances",
+        "top_routes",
+        "sites",
+        "sum_dose",
+    }
+
+    for m in plan.metrics:
+        low = tag_norm(m)
+
+        if low in known:
+            return low
+
+        if low.startswith("ratio="):
+            return low
+
+    return None
+
+
+def apply_metrics(rows, plan, ctx):
     if not plan.metrics:
         return rows
 
-    metric = norm(
-        plan.metrics[-1]
-    )
+    metric = resolve_metric(plan)
+
+    if not metric:
+        return rows
 
     total = len(rows)
 
-    # ---------------------------------
     # count
-    # ---------------------------------
     if metric == "count":
         return total
 
-    # ---------------------------------
-    # first / last fallback
-    # ---------------------------------
+    # first
     if metric == "first":
         return rows[0] if rows else {}
 
+    # last
     if metric == "last":
         return rows[-1] if rows else {}
 
-    # ---------------------------------
+    # since
+    if metric == "since":
+        if not rows:
+            return ""
+
+        row = rows[-1]
+
+        try:
+            ts = int(row_get(row, "time"))
+        except:
+            return ""
+
+        now = int(time.time() * 1000)
+        return human_since(max(0, now - ts))
+
+    # dose
+    if metric == "dose":
+        if not rows:
+            return ""
+
+        val = row_get(rows[-1], "dose")
+        unit = row_get(rows[-1], "unit")
+
+        if val is None:
+            return ""
+
+        return f"{val} {unit}".strip()
+
+    # substance
+    if metric == "substance":
+        if not rows:
+            return ""
+
+        return str(
+            row_get(rows[-1], "substance") or ""
+        )
+
     # top_substances
-    # ---------------------------------
     if metric == "top_substances":
         c = Counter()
 
         for r in rows:
-            val = row_get(
-                r,
-                "substance",
-            )
+            v = row_get(r, "substance")
+            if v:
+                c[str(v)] += 1
 
-            if val:
-                c[str(val)] += 1
-
-        out = []
-
-        for k, v in c.most_common():
-            out.append(
-                {
-                    "substance": k,
-                    "count": v,
-                }
-            )
+        out = [
+            {
+                "substance": k,
+                "count": v,
+            }
+            for k, v in c.most_common()
+        ]
 
         n = (
             plan.params.get("top")
-            or plan.params.get(
-                "limit"
-            )
+            or plan.params.get("limit")
         )
 
         return top_n(out, n)
 
-    # ---------------------------------
     # top_routes
-    # ---------------------------------
     if metric == "top_routes":
         c = Counter()
 
         for r in rows:
-            val = row_get(
-                r,
-                "route",
-            )
+            v = row_get(r, "route")
+            if v:
+                v = canonical_value("route", v)
+                c[str(v)] += 1
 
-            if val:
-                val = canonical_value(
-                    "route",
-                    val,
-                )
-
-                c[str(val)] += 1
-
-        out = []
-
-        for k, v in c.most_common():
-            out.append(
-                {
-                    "value": k,
-                    "count": v,
-                }
-            )
+        out = [
+            {
+                "value": k,
+                "count": v,
+            }
+            for k, v in c.most_common()
+        ]
 
         n = (
             plan.params.get("top")
-            or plan.params.get(
-                "limit"
-            )
+            or plan.params.get("limit")
         )
 
         return top_n(out, n)
 
-    # ---------------------------------
     # sites
-    # ---------------------------------
     if metric == "sites":
         c = Counter()
 
         for r in rows:
-            val = row_get(
-                r,
-                "site",
-            )
+            v = row_get(r, "site")
+            if v:
+                v = canonical_value("site", v)
+                c[str(v)] += 1
 
-            if val:
-                val = canonical_value(
-                    "site",
-                    val,
-                )
-
-                c[str(val)] += 1
-
-        out = []
-
-        for k, v in c.most_common():
-            out.append(
-                {
-                    "value": k,
-                    "count": v,
-                }
-            )
+        out = [
+            {
+                "value": k,
+                "count": v,
+            }
+            for k, v in c.most_common()
+        ]
 
         n = (
             plan.params.get("top")
-            or plan.params.get(
-                "limit"
-            )
+            or plan.params.get("limit")
         )
 
         return top_n(out, n)
 
-    # ---------------------------------
     # ratio=field
-    # ---------------------------------
-    if metric.startswith(
-        "ratio="
-    ):
-        target = metric.split(
-            "=",
-            1,
-        )[1]
+    if metric.startswith("ratio="):
+        field = metric.split("=", 1)[1]
 
         c = Counter()
 
         for r in rows:
-            val = row_get(
-                r,
-                target,
-            )
-
-            if val is None:
+            v = row_get(r, field)
+            if v is None:
                 continue
 
-            val = canonical_value(
-                target,
-                val,
-            )
+            v = canonical_value(field, v)
+            c[str(v)] += 1
 
-            c[str(val)] += 1
+        denom = sum(c.values())
 
-        denom = sum(
-            c.values()
-        )
-
-        out = []
-
-        for k, v in c.most_common():
-            out.append(
-                {
-                    "value": k,
-                    "count": v,
-                    "label": pct(
-                        v,
-                        denom,
-                    ),
-                }
-            )
+        out = [
+            {
+                "value": k,
+                "count": v,
+                "label": pct(v, denom),
+            }
+            for k, v in c.most_common()
+        ]
 
         n = (
             plan.params.get("top")
-            or plan.params.get(
-                "limit"
-            )
+            or plan.params.get("limit")
         )
 
         return top_n(out, n)
 
-    # ---------------------------------
     # sum_dose
-    # ---------------------------------
     if metric == "sum_dose":
-        s = 0
+        s = 0.0
 
         for r in rows:
-            val = row_get(
-                r,
-                "dose",
-            )
+            val = row_get(r, "dose")
 
             try:
                 s += float(val)
             except:
                 pass
 
-        return s
+        if s.is_integer():
+            return int(s)
 
-    # ---------------------------------
-    # fallback
-    # ---------------------------------
+        return round(s, 2)
+
     return rows

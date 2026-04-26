@@ -1,11 +1,8 @@
-# src/query_plan.py
-
 from dataclasses import dataclass, field
 
 
 @dataclass
 class QueryPlan:
-    # query semantics
     group: str | None = None
     selector: str | None = None
 
@@ -14,13 +11,18 @@ class QueryPlan:
     formats: list = field(default_factory=list)
     params: dict = field(default_factory=dict)
 
-    # presentation semantics
     display: dict = field(
         default_factory=lambda: {
             "dose": True,
             "unit": True,
             "route": False,
+            "site": False,
             "parens": True,
             "time": False,
+            "labels": True,
+            "count": False,
+            "percent": True,
+            "compact": False,
+            "sep": ", ",
         }
     )

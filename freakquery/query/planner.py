@@ -1,129 +1,22 @@
-# src/query/planner.py
+# freakquery/query/planner.py
 
 from freakquery.query_plan import QueryPlan
-from freakquery.constants import (
-    FORMATS,
-    PARAMS,
-    METRIC_PREFIXES,
-    SEL_FIRST,
-    SEL_LAST,
-    SEL_RANDOM,
-    SEL_LARGEST,
-    SEL_LONGEST,
-    GRP_BINGES,
-    GRP_STREAKS,
-)
+from freakquery.tag_registry import REGISTRY
 
 
-def norm(x):
+def tag_norm(x):
     return str(x).strip().lower()
 
 
-# -------------------------------------------------
-# PRESENTATION FLAGS (bare tokens only)
-# route / site without "=" are display flags
-# -------------------------------------------------
-DISPLAY_KEYS = {
-    "dose",
-    "unit",
-    "route",
-    "site",
-    "parens",
-    "time",
-    "labels",
-    "percent",
-    "compact",
-    "sep",
-}
-
-
-# key=value display only
-DISPLAY_KV_ONLY = {
-    "count",
-}
-
-
-# safe key=value display params
-DISPLAY_ASSIGN_KEYS = {
-    "dose",
-    "unit",
-    "parens",
-    "time",
-    "labels",
-    "percent",
-    "compact",
-    "sep",
-}
-
-
-# -------------------------------------------------
-# SELECTORS
-# -------------------------------------------------
-SELECTORS = {
-    norm(SEL_FIRST),
-    norm(SEL_LAST),
-    norm(SEL_RANDOM),
-    norm(SEL_LARGEST),
-    norm(SEL_LONGEST),
-}
-
-
-# -------------------------------------------------
-# GROUPS
-# -------------------------------------------------
-GROUPS = {
-    norm(GRP_BINGES),
-    norm(GRP_STREAKS),
-}
-
-
-# -------------------------------------------------
-# NORMALIZED SETS
-# -------------------------------------------------
-FORMAT_SET = {
-    norm(x) for x in FORMATS
-}
-
-PARAM_SET = {
-    norm(x) for x in PARAMS
-}
-
-PREFIX_SET = {
-    norm(x) for x in METRIC_PREFIXES
-}
-
-
-# -------------------------------------------------
-# VALUE PARSER
-# -------------------------------------------------
 def parse_value(v):
     raw = str(v).strip()
     low = raw.lower()
 
-    if low in (
-        "true",
-        "1",
-        "yes",
-        "on",
-        "enabled",
-    ):
+    if low in ("true", "1", "yes", "on"):
         return True
 
-    if low in (
-        "false",
-        "0",
-        "no",
-        "off",
-        "disabled",
-    ):
+    if low in ("false", "0", "no", "off"):
         return False
-
-    if low in (
-        "none",
-        "null",
-        "nil",
-    ):
-        return None
 
     try:
         if "." not in raw:
@@ -139,9 +32,24 @@ def parse_value(v):
     return raw
 
 
-# -------------------------------------------------
-# MAIN
-# -------------------------------------------------
+DISPLAY_ONLY = {
+    "parens",
+    "time",
+    "labels",
+    "percent",
+    "compact",
+    "sep",
+}
+
+FIELD_EXTRACTORS = {
+    "dose",
+    "substance",
+    "route",
+    "unit",
+    "site",
+}
+
+
 def build_plan(parts):
     plan = QueryPlan()
 
@@ -151,87 +59,81 @@ def build_plan(parts):
         if not part:
             continue
 
-        low = norm(part)
+        low = tag_norm(part)
 
-        # -----------------------------------------
+        # -------------------------
         # key=value
-        # IMPORTANT:
-        # route=oral / site=left nostril are FILTERS
-        # route / site (without =) are DISPLAY FLAGS
-        # -----------------------------------------
+        # -------------------------
         if "=" in part:
-            key, value = part.split(
-                "=",
-                1,
-            )
+            key, value = part.split("=", 1)
+            key_l = tag_norm(key)
 
-            key_l = norm(key)
-            parsed = parse_value(value)
-
-            # safe display assignments only
-            if key_l in DISPLAY_ASSIGN_KEYS:
-                plan.display[key_l] = parsed
-                continue
-
-            # kv-only display flags
-            if key_l in DISPLAY_KV_ONLY:
-                plan.display[key_l] = parsed
-                continue
-
-            # metric prefixes
-            # ratio=route
-            if key_l in PREFIX_SET:
+            # metric params
+            if key_l == "ratio":
                 plan.metrics.append(
-                    key_l
-                    + "="
-                    + norm(value)
+                    f"ratio={tag_norm(value)}"
                 )
                 continue
 
-            # params
-            if key_l in PARAM_SET:
-                plan.params[key_l] = parsed
+            if key_l in ("top", "limit"):
+                plan.params[key_l] = parse_value(value)
                 continue
 
-            # default = filter
+            # display config
+            if key_l in DISPLAY_ONLY:
+                plan.display[key_l] = parse_value(value)
+                continue
+
+            # otherwise filter
             plan.filters.append(
-                key_l
-                + "="
-                + str(value).strip()
+                f"{key_l}={value.strip()}"
             )
             continue
 
-        # -----------------------------------------
-        # bare display flags
-        # -----------------------------------------
-        if low in DISPLAY_KEYS:
+        # -------------------------
+        # direct field extractors
+        # -------------------------
+        if low in FIELD_EXTRACTORS:
+            if plan.selector:
+                plan.metrics.append(low)
+            else:
+                plan.display[low] = True
+            continue
+
+        # -------------------------
+        # display flags
+        # -------------------------
+        if low in DISPLAY_ONLY:
             plan.display[low] = True
             continue
 
-        # -----------------------------------------
+        # -------------------------
         # formats
-        # -----------------------------------------
-        if low in FORMAT_SET:
+        # -------------------------
+        if low == "json":
             plan.formats.append(low)
             continue
 
-        # -----------------------------------------
-        # selectors
-        # -----------------------------------------
-        if low in SELECTORS:
-            plan.selector = low
-            continue
+        # -------------------------
+        # registry tags
+        # -------------------------
+        meta = REGISTRY.get(low)
 
-        # -----------------------------------------
-        # groups
-        # -----------------------------------------
-        if low in GROUPS:
-            plan.group = low
-            continue
+        if meta:
+            stage = meta.get("stage")
 
-        # -----------------------------------------
-        # fallback = metric
-        # -----------------------------------------
-        plan.metrics.append(low)
+            if stage == "selector":
+                plan.selector = low
+                continue
+
+            if stage == "group":
+                plan.group = low
+                continue
+
+            if stage == "metric":
+                plan.metrics.append(low)
+                continue
+
+        # unknown tag ignored
 
     return plan

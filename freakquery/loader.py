@@ -1,5 +1,3 @@
-# src/loader.py
-
 import json
 from pathlib import Path
 
@@ -20,19 +18,14 @@ def load_logs(path):
     rows = []
 
     for row in data:
-        if not isinstance(
-            row,
-            dict,
-        ):
+        if not isinstance(row, dict):
             continue
 
         item = dict(row)
 
         if "route" in item:
-            item["route"] = (
-                normalize_route(
-                    item["route"]
-                )
+            item["route"] = normalize_route(
+                item["route"]
             )
 
         rows.append(item)

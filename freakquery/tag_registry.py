@@ -3,7 +3,11 @@
 from freakquery.types import *
 
 REGISTRY = {
-    # selectors
+
+    # =====================================================
+    # SELECTORS
+    # =====================================================
+
     "first": {
         "accept": {LOG_ROWS, GROUP_ROWS, TEXT_ROWS},
         "returns": LOG_ROWS,
@@ -25,21 +29,6 @@ REGISTRY = {
         "fn": "random_item",
     },
 
-    # grouping
-    "binges": {
-        "accept": {LOG_ROWS},
-        "returns": GROUP_ROWS,
-        "stage": "group",
-        "fn": "make_binges",
-    },
-
-    "streaks": {
-        "accept": {LOG_ROWS},
-        "returns": GROUP_ROWS,
-        "stage": "group",
-        "fn": "make_streaks",
-    },
-
     "largest": {
         "accept": {GROUP_ROWS},
         "returns": GROUP_ROWS,
@@ -54,7 +43,28 @@ REGISTRY = {
         "fn": "longest_group",
     },
 
-    # metrics
+    # =====================================================
+    # GROUPING
+    # =====================================================
+
+    "binges": {
+        "accept": {LOG_ROWS},
+        "returns": GROUP_ROWS,
+        "stage": "group",
+        "fn": "make_binges",
+    },
+
+    "streaks": {
+        "accept": {LOG_ROWS},
+        "returns": GROUP_ROWS,
+        "stage": "group",
+        "fn": "make_streaks",
+    },
+
+    # =====================================================
+    # CORE METRICS
+    # =====================================================
+
     "count": {
         "accept": {
             LOG_ROWS,
@@ -66,20 +76,6 @@ REGISTRY = {
         "returns": SCALAR,
         "stage": "metric",
         "fn": "count_rows",
-    },
-
-    "timeline": {
-        "accept": {LOG_ROWS},
-        "returns": TEXT_ROWS,
-        "stage": "metric",
-        "fn": "timeline_rows",
-    },
-
-    "sequence": {
-        "accept": {LOG_ROWS},
-        "returns": TEXT_ROWS,
-        "stage": "metric",
-        "fn": "timeline_rows",
     },
 
     "dose": {
@@ -103,6 +99,67 @@ REGISTRY = {
         "fn": "since_value",
     },
 
+    "sum_dose": {
+        "accept": {LOG_ROWS},
+        "returns": SCALAR,
+        "stage": "metric",
+        "fn": "sum_dose_value",
+    },
+
+    # =====================================================
+    # LIST / RANKING METRICS
+    # =====================================================
+
+    "top_substances": {
+        "accept": {LOG_ROWS},
+        "returns": TEXT_ROWS,
+        "stage": "metric",
+        "fn": "top_substances_rows",
+    },
+
+    "top_routes": {
+        "accept": {LOG_ROWS},
+        "returns": TEXT_ROWS,
+        "stage": "metric",
+        "fn": "top_routes_rows",
+    },
+
+    "sites": {
+        "accept": {LOG_ROWS},
+        "returns": TEXT_ROWS,
+        "stage": "metric",
+        "fn": "sites_rows",
+    },
+
+    "substance_totals": {
+        "accept": {LOG_ROWS},
+        "returns": TOTAL_ROWS,
+        "stage": "metric",
+        "fn": "substance_totals_rows",
+    },
+
+    # =====================================================
+    # TIMELINE / TEXT
+    # =====================================================
+
+    "timeline": {
+        "accept": {LOG_ROWS},
+        "returns": TEXT_ROWS,
+        "stage": "metric",
+        "fn": "timeline_rows",
+    },
+
+    "sequence": {
+        "accept": {LOG_ROWS},
+        "returns": TEXT_ROWS,
+        "stage": "metric",
+        "fn": "timeline_rows",
+    },
+
+    # =====================================================
+    # GROUP METRICS
+    # =====================================================
+
     "group_sum": {
         "accept": {GROUP_ROWS},
         "returns": SCALAR,
@@ -124,6 +181,10 @@ REGISTRY = {
         "fn": "main_substance_value",
     },
 
+    # =====================================================
+    # TRENDING
+    # =====================================================
+
     "trend_month": {
         "accept": {LOG_ROWS},
         "returns": TREND_ROWS,
@@ -136,19 +197,5 @@ REGISTRY = {
         "returns": TREND_ROWS,
         "stage": "metric",
         "fn": "trend_year_rows",
-    },
-
-    "substance_totals": {
-        "accept": {LOG_ROWS},
-        "returns": TOTAL_ROWS,
-        "stage": "metric",
-        "fn": "substance_totals_rows",
-    },
-
-    "top_substances": {
-        "accept": {LOG_ROWS},
-        "returns": TEXT_ROWS,
-        "stage": "metric",
-        "fn": "top_substances_rows",
     },
 }
