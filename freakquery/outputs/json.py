@@ -29,27 +29,22 @@ def normalize_obj(obj):
 
     out = dict(obj)
 
-    route = row_get(
-        out,
+    for field in (
+        "substance",
         "route",
-    )
-
-    if route is not None:
-        out["route"] = display_value(
-            "route",
-            route,
-        )
-
-    site = row_get(
-        out,
         "site",
-    )
-
-    if site is not None:
-        out["site"] = display_value(
-            "site",
-            site,
+        "unit",
+    ):
+        val = row_get(
+            out,
+            field,
         )
+
+        if val is not None:
+            out[field] = display_value(
+                field,
+                val,
+            )
 
     return out
 

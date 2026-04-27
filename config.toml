@@ -84,6 +84,167 @@ transdermal = "transdermal"
 "left hand" = "left dorsal hand"
 "right hand" = "right dorsal hand"
 
+[aliases.unit]
+
+# -----------------
+# MASS
+# -----------------
+
+# micrograms
+"μg" = "ug"
+"µg" = "ug"
+"mcg" = "ug"
+"microgram" = "ug"
+"micrograms" = "ug"
+"micro gram" = "ug"
+"micro grams" = "ug"
+
+# milligrams
+"milligram" = "mg"
+"milligrams" = "mg"
+"miligram" = "mg"
+"miligrams" = "mg"
+
+# grams
+"gram" = "g"
+"grams" = "g"
+
+# kilograms
+"kilogram" = "kg"
+"kilograms" = "kg"
+
+# -----------------
+# VOLUME
+# -----------------
+
+"milliliter" = "ml"
+"milliliters" = "ml"
+"millilitre" = "ml"
+"millilitres" = "ml"
+
+"liter" = "l"
+"liters" = "l"
+"litre" = "l"
+"litres" = "l"
+
+# -----------------
+# SOLID DOSAGE
+# -----------------
+
+"pill" = "pill"
+"pills" = "pill"
+
+"capsule" = "capsule"
+"capsules" = "capsule"
+"cap" = "capsule"
+"caps" = "capsule"
+
+# -----------------
+# SMOKING
+# -----------------
+
+"joint" = "joint"
+"joints" = "joint"
+
+"blunt" = "blunt"
+"blunts" = "blunt"
+
+"spliff" = "spliff"
+"spliffs" = "spliff"
+
+"bowl" = "bowl"
+"bowls" = "bowl"
+
+"cone" = "cone"
+"cones" = "cone"
+
+"puff" = "puff"
+"puffs" = "puff"
+
+"hit" = "hit"
+"hits" = "hit"
+
+"toke" = "hit"
+"tokes" = "hit"
+
+# -----------------
+# ALCOHOL
+# -----------------
+
+"drink" = "drink"
+"drinks" = "drink"
+
+"beer" = "beer"
+"beers" = "beer"
+
+"shot" = "shot"
+"shots" = "shot"
+
+"glass" = "glass"
+"glasses" = "glass"
+
+"wine glass" = "glass"
+"wine glasses" = "glass"
+
+# -----------------
+# LIQUID / OTHER
+# -----------------
+
+"drop" = "drop"
+"drops" = "drop"
+
+"spray" = "spray"
+"sprays" = "spray"
+
+# -----------------
+# OTHER COUNTABLE
+# -----------------
+
+"line" = "line"
+"lines" = "line"
+
+"rail" = "line"
+"rails" = "line"
+
+"bump" = "bump"
+"bumps" = "bump"
+
+"point" = "point"
+"points" = "point"
+
+"piece" = "piece"
+"pieces" = "piece"
+
+"rock" = "rock"
+"rocks" = "rock"
+
+"crystal" = "crystal"
+"crystals" = "crystal"
+
+"stamp" = "stamp"
+"stamps" = "stamp"
+
+# LSD / blotter
+"blotter" = "blotter"
+"blotters" = "blotter"
+"tab" = "blotter"
+"tabs" = "blotter"
+
+# -----------------
+# GENERIC
+# -----------------
+
+"unit" = "unit"
+"units" = "unit"
+
+"dose" = "dose"
+"doses" = "dose"
+
+"serving" = "serving"
+"servings" = "serving"
+
+"u" = "unit"
+
 [limits]
 default = 10
 rows = 100

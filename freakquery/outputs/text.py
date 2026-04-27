@@ -310,8 +310,9 @@ def render_text(
 
             if show_labels:
                 parts.append(
-                    str(
-                        item["value"]
+                    display_value(
+                        "value",
+                        item["value"],
                     )
                 )
 
@@ -324,9 +325,7 @@ def render_text(
             else:
                 parts.append(
                     wrap_count(
-                        item[
-                            "count"
-                        ],
+                        item["count"],
                         use_parens,
                     )
                 )
@@ -345,10 +344,9 @@ def render_text(
             and len(item) <= 2
         ):
             left = (
-                str(
-                    item[
-                        "substance"
-                    ]
+                display_value(
+                    "substance",
+                    item["substance"],
                 )
                 if show_labels
                 else ""
@@ -356,15 +354,11 @@ def render_text(
 
             right = (
                 str(
-                    item[
-                        "count"
-                    ]
+                    item["count"]
                 )
                 if show_count
                 else wrap_count(
-                    item[
-                        "count"
-                    ],
+                    item["count"],
                     use_parens,
                 )
             )
@@ -410,7 +404,10 @@ def render_text(
             and sub
         ):
             parts.append(
-                str(sub)
+                display_value(
+                    "substance",
+                    sub,
+                )
             )
 
         extras = []
@@ -439,7 +436,10 @@ def render_text(
             ):
                 d += (
                     " "
-                    + str(unit)
+                    + display_value(
+                        "unit",
+                        unit,
+                    )
                 )
 
             extras.append(d)

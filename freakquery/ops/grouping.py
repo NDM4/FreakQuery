@@ -10,6 +10,9 @@ from freakquery.constants import (
 
 from freakquery.units import to_mg
 from freakquery.config import get
+from freakquery.registry.aliases import (
+    canonical_value,
+)
 
 
 def group_duration(group):
@@ -35,7 +38,15 @@ def main_substance(group):
     c = Counter()
 
     for row in group:
-        c[row.get("substance", "")] += 1
+        sub = canonical_value(
+            "substance",
+            row.get(
+                "substance",
+                "",
+            ),
+        )
+
+        c[sub] += 1
 
     if not c:
         return ""

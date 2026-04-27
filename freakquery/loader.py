@@ -1,33 +1,105 @@
+# freakquery/loader.py
+
 import json
-from pathlib import Path
 
 from freakquery.registry.aliases import (
-    normalize_route,
+    canonical_value,
 )
 
 
 def load_logs(path):
-    path = Path(path)
+    with open(
+        path,
+        "r",
+        encoding="utf-8",
+    ) as f:
+        data = json.load(f)
 
-    data = json.loads(
-        path.read_text(
-            encoding="utf-8"
-        )
-    )
+    # ---------------------------------
+    # Standard logs.json
+    # ---------------------------------
+    if isinstance(data, list):
+        return data
 
+    # ---------------------------------
+    # Journal export
+    # ---------------------------------
+    if isinstance(data, dict):
+        if "experiences" in data:
+            return load_journal(data)
+
+    return []
+
+
+def load_journal(data):
     rows = []
 
-    for row in data:
-        if not isinstance(row, dict):
-            continue
+    for exp in data.get(
+        "experiences",
+        [],
+    ):
+        for ing in exp.get(
+            "ingestions",
+            [],
+        ):
+            tm = ing.get("time")
 
-        item = dict(row)
+            try:
+                row_id = int(tm)
+            except:
+                row_id = len(rows) + 1
 
-        if "route" in item:
-            item["route"] = normalize_route(
-                item["route"]
+            row = {
+                "id": row_id,
+                "time": tm,
+                "substance": canonical_value(
+                    "substance",
+                    ing.get(
+                        "substanceName",
+                        "",
+                    ),
+                ),
+                "route": canonical_value(
+                    "route",
+                    ing.get(
+                        "administrationRoute",
+                        "",
+                    ),
+                ),
+                "dose": ing.get(
+                    "dose"
+                ),
+                "unit": canonical_value(
+                    "unit",
+                    ing.get(
+                        "units",
+                        "",
+                    ),
+                ),
+            }
+
+            site = ing.get(
+                "administrationSite"
             )
 
-        rows.append(item)
+            if site:
+                row["site"] = canonical_value(
+                    "site",
+                    site,
+                )
+
+            notes = ing.get(
+                "notes"
+            )
+
+            if notes:
+                row["notes"] = notes
+
+            if ing.get(
+                "isDoseAnEstimate"
+            ):
+                row["estimated"] = True
+
+            rows.append(row)
 
     return rows

@@ -56,45 +56,63 @@ def field_keys(key):
     return [key]
 
 
-def canonical_route(value):
-    mp = get(
-        "aliases.route",
+def alias_map(field):
+    aliases = get(
+        "aliases",
         {},
     )
+
+    return aliases.get(
+        norm(field),
+        {},
+    )
+
+
+def canonical_field(
+    field,
+    value,
+):
+    mp = alias_map(field)
 
     v = norm(value)
 
     return mp.get(v, v)
+
+
+def canonical_route(value):
+    return canonical_field(
+        "route",
+        value,
+    )
 
 
 def canonical_site(value):
-    mp = get(
-        "aliases.site",
-        {},
+    return canonical_field(
+        "site",
+        value,
     )
-
-    v = norm(value)
-
-    return mp.get(v, v)
 
 
 def canonical_value(
     field,
     value,
 ):
-    f = norm(field)
+    return canonical_field(
+        field,
+        value,
+    )
 
-    if f == "route":
-        return canonical_route(
-            value
-        )
 
-    if f == "site":
-        return canonical_site(
-            value
-        )
-
-    return norm(value)
+def same_value(
+    field,
+    a,
+    b,
+):
+    return (
+        canonical_value(field, a)
+        ==
+        canonical_value(field, b)
+    )
 
 
 def display_value(

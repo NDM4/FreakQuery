@@ -3,11 +3,11 @@
 from freakquery.registry.aliases import (
     norm,
     field_keys,
-    canonical_value,
+    same_value,
 )
 
 
-def row_value(row, key):
+def row_get(row, key):
     for wanted in field_keys(key):
         nw = norm(wanted)
 
@@ -33,23 +33,20 @@ def apply_filters(rows, plan, ctx):
 
             key, value = f.split("=", 1)
 
-            rv = row_value(row, key)
+            rv = row_get(
+                row,
+                key,
+            )
 
             if rv is None:
                 ok = False
                 break
 
-            a = canonical_value(
+            if not same_value(
                 key,
                 rv,
-            )
-
-            b = canonical_value(
-                key,
                 value,
-            )
-
-            if a != b:
+            ):
                 ok = False
                 break
 
