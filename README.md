@@ -1,3 +1,11 @@
+## FreakLog
+
+## v3.1.0
+- Added interactive shell
+- Added new metrics (sequence, timeline...)
+- Fixed bugs
+- New config file (config.toml)
+
 ## Features
 
 - **Advanced Template Rendering Engine**: Generate dynamic, data-driven text through inline tags such as `{{count}}`, `{{last}}`, or `{{route=intranasal|ratio=site}}`.
