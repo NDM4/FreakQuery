@@ -1,40 +1,59 @@
+from freakquery.config import get
 from freakquery.loader import load_logs
-from freakquery.engine import render
+from freakquery.engine import render as _render
 from freakquery.query.executor import execute_tag
 
 
-def render_template(template, source):
-    """
-    Render a template string containing {{tags}}.
+__version__ = get(
+    "core.version",
+    "0.0.0",
+)
 
-    source can be:
-    - path to json file
-    - already loaded list of dict rows
-    """
+__title__ = get(
+    "core.name",
+    "freakquery",
+)
+
+
+def _resolve_source(source):
     if isinstance(source, str):
-        data = load_logs(source)
-    else:
-        data = source
+        return load_logs(source)
+    return source
 
-    return render(template, data)
+
+def render(template, source):
+    """
+    Render template containing {{tags}}.
+
+    source:
+      - path to json
+      - loaded rows
+    """
+    data = _resolve_source(source)
+    return _render(template, data)
 
 
 def query(tag, source):
     """
-    Execute a single tag/query.
-
-    Example:
-        query("count", "data.json")
-        query("route=oral|count", rows)
+    Execute query/tag.
     """
-    if isinstance(source, str):
-        data = load_logs(source)
-    else:
-        data = source
+    data = _resolve_source(source)
 
     tag = str(tag).strip()
 
     if tag.startswith("{{") and tag.endswith("}}"):
         tag = tag[2:-2].strip()
 
-    return execute_tag(tag, data, None)
+    return execute_tag(
+        tag,
+        data,
+        None,
+    )
+
+
+__all__ = [
+    "__title__",
+    "__version__",
+    "render",
+    "query",
+]

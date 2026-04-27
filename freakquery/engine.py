@@ -1,5 +1,3 @@
-# src/engine.py
-
 import re
 import traceback
 
@@ -13,13 +11,23 @@ TAG_RE = re.compile(
 )
 
 
+def repl(query, data):
+    ctx = Context(data)
+
+    return execute_tag(
+        str(query).strip(),
+        data,
+        ctx,
+    )
+
+
 def render(
     template,
     data,
 ):
     ctx = Context(data)
 
-    def repl(match):
+    def replace(match):
         tag = match.group(1).strip()
 
         try:
@@ -37,11 +45,9 @@ def render(
             )
             traceback.print_exc()
 
-            return (
-                f"[error:{tag}]"
-            )
+            return f"[error:{tag}]"
 
     return TAG_RE.sub(
-        repl,
+        replace,
         template,
     )

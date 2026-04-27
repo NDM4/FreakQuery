@@ -1,18 +1,18 @@
-# src/ops/grouping.py
+# freakquery/ops/grouping.py
 
 from collections import Counter
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from freakquery.constants import (
     GRP_BINGES,
     GRP_STREAKS,
 )
 
+from freakquery.units import to_mg
+from freakquery.config import get
+
 
 def group_duration(group):
-    """
-    Return duration in milliseconds between first and last row.
-    """
     if not group:
         return 0
 
@@ -20,115 +20,125 @@ def group_duration(group):
 
 
 def group_sum(group):
-    """
-    Sum numeric doses inside a group.
-    """
-    total = 0
+    total = 0.0
 
     for row in group:
-        total += row.get("dose", 0) or 0
+        total += to_mg(
+            row.get("dose"),
+            row.get("unit"),
+        )
 
     return total
 
 
 def main_substance(group):
-    """
-    Most common substance inside a group.
-    """
-    counts = Counter()
+    c = Counter()
 
     for row in group:
-        counts[row.get("substance", "")] += 1
+        c[row.get("substance", "")] += 1
 
-    if not counts:
+    if not c:
         return ""
 
-    return counts.most_common(1)[0][0]
+    return c.most_common(1)[0][0]
 
 
+# --------------------------------
+# BINGES
+# Needs at least one consecutive
+# pair inside the configured gap.
+# Isolated rows are ignored.
+# --------------------------------
 def build_binges(rows):
-    """
-    Group rows by same calendar day.
-    """
     if not rows:
         return []
 
-    rows = sorted(rows, key=lambda row: row["time"])
+    rows = sorted(
+        rows,
+        key=lambda r: r["time"],
+    )
+
+    gap_hours = get(
+        "grouping.binge_gap_hours",
+        8,
+    )
+
+    max_gap = int(
+        gap_hours * 60 * 60 * 1000
+    )
 
     groups = []
-    current = [rows[0]]
+    cur = []
 
-    for row in rows[1:]:
-        a = datetime.fromtimestamp(
-            current[-1]["time"] / 1000
-        )
-        b = datetime.fromtimestamp(
-            row["time"] / 1000
-        )
+    for i in range(len(rows) - 1):
+        a = rows[i]
+        b = rows[i + 1]
 
-        same_day = (
-            a.year == b.year and
-            a.month == b.month and
-            a.day == b.day
-        )
+        diff = b["time"] - a["time"]
 
-        if same_day:
-            current.append(row)
+        if diff <= max_gap:
+            if not cur:
+                cur = [a]
+
+            cur.append(b)
+
         else:
-            groups.append(current)
-            current = [row]
+            if cur:
+                groups.append(cur)
+                cur = []
 
-    groups.append(current)
+    if cur:
+        groups.append(cur)
 
     return groups
 
 
+# --------------------------------
+# STREAKS
+# Consecutive calendar days
+# --------------------------------
 def build_streaks(rows):
-    """
-    Group consecutive active days into streaks.
-    """
     if not rows:
         return []
 
-    rows = sorted(rows, key=lambda row: row["time"])
+    rows = sorted(
+        rows,
+        key=lambda r: r["time"],
+    )
 
     by_day = {}
 
     for row in rows:
-        dt = datetime.fromtimestamp(
+        d = datetime.fromtimestamp(
             row["time"] / 1000
-        )
+        ).date()
 
-        key = (dt.year, dt.month, dt.day)
+        by_day.setdefault(
+            d,
+            [],
+        ).append(row)
 
-        by_day.setdefault(key, []).append(row)
-
-    day_keys = sorted(by_day.keys())
+    days = sorted(by_day.keys())
 
     groups = []
-    current = list(by_day[day_keys[0]])
-    previous = datetime(*day_keys[0])
+    cur = list(by_day[days[0]])
+    prev = days[0]
 
-    for key in day_keys[1:]:
-        now = datetime(*key)
-
-        if (now - previous).days == 1:
-            current.extend(by_day[key])
+    for d in days[1:]:
+        if d - prev == timedelta(days=1):
+            cur.extend(by_day[d])
         else:
-            groups.append(current)
-            current = list(by_day[key])
+            groups.append(cur)
+            cur = list(by_day[d])
 
-        previous = now
+        prev = d
 
-    groups.append(current)
+    groups.append(cur)
 
     return groups
 
 
 def apply_grouping(rows, plan, ctx):
-    """
-    Apply grouping stage.
-    """
     mode = plan.group
 
     if mode == GRP_BINGES:

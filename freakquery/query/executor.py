@@ -1,8 +1,8 @@
-# src/query/executor.py
-
 import json
+import difflib
 
-from freakquery.constants import VERSION
+from freakquery.config import get
+from freakquery.tag_registry import REGISTRY
 
 from freakquery.query.parser import parse_tag
 from freakquery.registry.aliases import apply_aliases
@@ -20,17 +20,50 @@ from freakquery.outputs.text import render_text
 from freakquery.outputs.json import render_json
 
 
-def execute_tag(
-    tag,
-    data,
-    ctx,
-):
+VERSION = get(
+    "core.version",
+    "0.0.0",
+)
+
+
+def unknown_error(raw):
+    guess = difflib.get_close_matches(
+        raw.lower(),
+        REGISTRY.keys(),
+        n=1,
+        cutoff=0.65,
+    )
+
+    if guess:
+        return (
+            f"[error: unknown query '{raw}' "
+            f"(did you mean '{guess[0]}'?)]"
+        )
+
+    return f"[error: unknown query '{raw}']"
+
+
+def empty_plan(plan):
+    return not any([
+        plan.filters,
+        plan.group,
+        plan.selector,
+        plan.metrics,
+        plan.formats,
+    ])
+
+
+def execute_tag(tag, data, ctx):
     raw = str(tag).strip()
+
+    if not raw:
+        return ""
+
     low = raw.lower()
 
-    # ----------------------------
-    # META TAGS
-    # ----------------------------
+    # ------------------------
+    # meta
+    # ------------------------
     if low == "version":
         return VERSION
 
@@ -39,88 +72,48 @@ def execute_tag(
         "json|version",
     ):
         return json.dumps(
-            {
-                "version": VERSION
-            },
+            {"version": VERSION},
             ensure_ascii=False,
             indent=2,
         )
 
-    # ----------------------------
-    # PARSE
-    # ----------------------------
+    # ------------------------
+    # parse
+    # ------------------------
     parts = parse_tag(raw)
-
-    # aliases
     parts = apply_aliases(parts)
-
-    # precedence normalize
     parts = normalize_parts(parts)
 
-    # validate
     ok, err = validate_parts(parts)
 
     if not ok:
         return f"[error:{err}]"
 
-    # plan
     plan = build_plan(parts)
 
-    # ----------------------------
-    # EXECUTION PIPELINE
-    # ----------------------------
+    # ------------------------
+    # unknown query protection
+    # ------------------------
+    if empty_plan(plan):
+        return unknown_error(raw)
+
+    # ------------------------
+    # pipeline
+    # ------------------------
     rows = list(data)
 
-    rows = apply_filters(
-        rows,
-        plan,
-        ctx,
-    )
+    rows = apply_filters(rows, plan, ctx)
+    rows = apply_grouping(rows, plan, ctx)
+    rows = apply_selectors(rows, plan, ctx)
+    rows = apply_metrics(rows, plan, ctx)
+    rows = apply_transforms(rows, plan, ctx)
 
-    rows = apply_grouping(
-        rows,
-        plan,
-        ctx,
-    )
-
-    rows = apply_selectors(
-        rows,
-        plan,
-        ctx,
-    )
-
-    rows = apply_metrics(
-        rows,
-        plan,
-        ctx,
-    )
-
-    rows = apply_transforms(
-        rows,
-        plan,
-        ctx,
-    )
-
-    # ----------------------------
-    # OUTPUT FORMAT
-    # ----------------------------
+    # ------------------------
+    # output
+    # ------------------------
     if "json" in plan.formats:
-        out = render_json(
-            rows,
-            plan,
-            ctx,
-        )
+        out = render_json(rows, plan, ctx)
     else:
-        out = render_text(
-            rows,
-            plan,
-            ctx,
-        )
-
-    # ----------------------------
-    # SAFE RETURN
-    # ----------------------------
-    if out is None:
-        return ""
+        out = render_text(rows, plan, ctx)
 
     return str(out).rstrip()

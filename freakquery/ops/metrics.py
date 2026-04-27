@@ -9,8 +9,19 @@ from freakquery.registry.aliases import (
     field_keys,
 )
 
+from freakquery.ops.grouping import (
+    group_sum,
+    group_duration,
+    main_substance,
+)
+
+from freakquery.units import to_mg
 from freakquery.config import get
 
+
+# =====================================================
+# HELPERS
+# =====================================================
 
 def tag_norm(x):
     return str(x).strip().lower()
@@ -32,13 +43,10 @@ def pct(part, total):
 
 
 def top_n(items, n):
-    if not isinstance(n, int):
-        return items
+    if isinstance(n, int) and n >= 0:
+        return items[:n]
 
-    if n <= 0:
-        return items
-
-    return items[:n]
+    return items
 
 
 def row_get(row, key):
@@ -55,35 +63,129 @@ def row_get(row, key):
     return None
 
 
+def row_substance(row):
+    v = row_get(row, "substance")
+
+    if v is None:
+        return ""
+
+    return str(v).strip()
+
+
+def row_time_value(row):
+    v = row_get(row, "time")
+
+    try:
+        return int(v)
+    except:
+        return 0
+
+
+def row_dose_text(row):
+    dose = row_get(row, "dose")
+    unit = row_get(row, "unit")
+
+    if dose is None:
+        return ""
+
+    if unit:
+        return f"{dose} {unit}"
+
+    return str(dose)
+
+
+def ordered_rows(rows):
+    return sorted(
+        rows,
+        key=lambda r: row_time_value(r)
+    )
+
+
+def ordered_substances(rows):
+    out = []
+
+    for r in ordered_rows(rows):
+        s = row_substance(r)
+
+        if s:
+            out.append(s)
+
+    return out
+
+
+def counter_rows(counter):
+    return [
+        {
+            "value": k,
+            "count": v,
+        }
+        for k, v in counter.most_common()
+    ]
+
+
+def compress_sequence(items):
+    if not items:
+        return []
+
+    out = []
+
+    cur = items[0]
+    n = 1
+
+    for x in items[1:]:
+        if x == cur:
+            n += 1
+        else:
+            if n > 1:
+                out.append(
+                    f"{cur} x{n}"
+                )
+            else:
+                out.append(cur)
+
+            cur = x
+            n = 1
+
+    if n > 1:
+        out.append(
+            f"{cur} x{n}"
+        )
+    else:
+        out.append(cur)
+
+    return out
+
+
 def human_since(ms):
     seconds = ms // 1000
 
-    if seconds < 60:
-        return f"{seconds}s"
+    mins, sec = divmod(seconds, 60)
+    hrs, mins = divmod(mins, 60)
+    days, hrs = divmod(hrs, 24)
+    years, days = divmod(days, 365)
+    months, days = divmod(days, 30)
 
-    minutes = seconds // 60
+    if years:
+        return f"{years}y {months}mo"
 
-    if minutes < 60:
-        return f"{minutes}m {seconds % 60}s"
+    if months:
+        return f"{months}mo {days}d"
 
-    hours = minutes // 60
+    if days:
+        return f"{days}d {hrs}h"
 
-    if hours < 24:
-        return f"{hours}h {minutes % 60}m"
+    if hrs:
+        return f"{hrs}h {mins}m"
 
-    days = hours // 24
+    if mins:
+        return f"{mins}m {sec}s"
 
-    if days < 30:
-        return f"{days}d {hours % 24}h"
+    return f"{sec}s"
 
-    months = days // 30
 
-    if months < 12:
-        return f"{months}mo {days % 30}d"
-
-    years = days // 365
-    return f"{years}y {(days % 365)//30}mo"
-
+# =====================================================
+# METRIC RESOLUTION
+# =====================================================
 
 def resolve_metric(plan):
     known = {
@@ -97,19 +199,35 @@ def resolve_metric(plan):
         "top_routes",
         "sites",
         "sum_dose",
+        "timeline",
+        "sequence",
+        "group_sum",
+        "group_duration",
+        "group_count",
+        "main_substance",
+        "substances_count",
+        "avg_gap",
     }
 
     for m in plan.metrics:
-        low = tag_norm(m)
+        low = str(m).strip().lower()
 
-        if low in known:
-            return low
-
+        # dynamic metrics first
         if low.startswith("ratio="):
-            return low
+            return m
+
+        if low.startswith("sequence="):
+            return m
+
+        # static metrics
+        return low
 
     return None
 
+
+# =====================================================
+# MAIN
+# =====================================================
 
 def apply_metrics(rows, plan, ctx):
     if not plan.metrics:
@@ -122,19 +240,19 @@ def apply_metrics(rows, plan, ctx):
 
     total = len(rows)
 
-    # count
+    # -------------------------------------------------
+    # BASIC
+    # -------------------------------------------------
+
     if metric == "count":
         return total
 
-    # first
     if metric == "first":
         return rows[0] if rows else {}
 
-    # last
     if metric == "last":
         return rows[-1] if rows else {}
 
-    # since
     if metric == "since":
         if not rows:
             return ""
@@ -142,41 +260,87 @@ def apply_metrics(rows, plan, ctx):
         row = rows[-1]
 
         try:
-            ts = int(row_get(row, "time"))
+            ts = int(
+                row_get(
+                    row,
+                    "time",
+                )
+            )
         except:
             return ""
 
-        now = int(time.time() * 1000)
-        return human_since(max(0, now - ts))
+        now = int(
+            time.time() * 1000
+        )
 
-    # dose
+        return human_since(
+            max(
+                0,
+                now - ts,
+            )
+        )
+
     if metric == "dose":
         if not rows:
             return ""
 
-        val = row_get(rows[-1], "dose")
-        unit = row_get(rows[-1], "unit")
+        val = row_get(
+            rows[-1],
+            "dose",
+        )
+
+        unit = row_get(
+            rows[-1],
+            "unit",
+        )
 
         if val is None:
             return ""
 
         return f"{val} {unit}".strip()
 
-    # substance
     if metric == "substance":
         if not rows:
             return ""
 
         return str(
-            row_get(rows[-1], "substance") or ""
+            row_get(
+                rows[-1],
+                "substance",
+            ) or ""
         )
 
-    # top_substances
+    # -------------------------------------------------
+    # SUM
+    # -------------------------------------------------
+
+    if metric == "sum_dose":
+        s = 0.0
+
+        for r in rows:
+            s += to_mg(
+                row_get(r, "dose"),
+                row_get(r, "unit"),
+            )
+
+        if s.is_integer():
+            return int(s)
+
+        return round(s, 2)
+
+    # -------------------------------------------------
+    # TOPS
+    # -------------------------------------------------
+
     if metric == "top_substances":
         c = Counter()
 
         for r in rows:
-            v = row_get(r, "substance")
+            v = row_get(
+                r,
+                "substance",
+            )
+
             if v:
                 c[str(v)] += 1
 
@@ -188,75 +352,81 @@ def apply_metrics(rows, plan, ctx):
             for k, v in c.most_common()
         ]
 
-        n = (
-            plan.params.get("top")
-            or plan.params.get("limit")
+        return top_n(
+            out,
+            plan.params.get("limit"),
         )
 
-        return top_n(out, n)
-
-    # top_routes
     if metric == "top_routes":
         c = Counter()
 
         for r in rows:
-            v = row_get(r, "route")
+            v = row_get(
+                r,
+                "route",
+            )
+
             if v:
-                v = canonical_value("route", v)
+                v = canonical_value(
+                    "route",
+                    v,
+                )
+
                 c[str(v)] += 1
 
-        out = [
-            {
-                "value": k,
-                "count": v,
-            }
-            for k, v in c.most_common()
-        ]
-
-        n = (
-            plan.params.get("top")
-            or plan.params.get("limit")
+        return top_n(
+            counter_rows(c),
+            plan.params.get("limit"),
         )
 
-        return top_n(out, n)
-
-    # sites
     if metric == "sites":
         c = Counter()
 
         for r in rows:
-            v = row_get(r, "site")
+            v = row_get(
+                r,
+                "site",
+            )
+
             if v:
-                v = canonical_value("site", v)
+                v = canonical_value(
+                    "site",
+                    v,
+                )
+
                 c[str(v)] += 1
 
-        out = [
-            {
-                "value": k,
-                "count": v,
-            }
-            for k, v in c.most_common()
-        ]
-
-        n = (
-            plan.params.get("top")
-            or plan.params.get("limit")
+        return top_n(
+            counter_rows(c),
+            plan.params.get("limit"),
         )
 
-        return top_n(out, n)
+    # -------------------------------------------------
+    # RATIO
+    # -------------------------------------------------
 
-    # ratio=field
     if metric.startswith("ratio="):
-        field = metric.split("=", 1)[1]
+        field = metric.split(
+            "=",
+            1,
+        )[1]
 
         c = Counter()
 
         for r in rows:
             v = row_get(r, field)
-            if v is None:
+
+            if v in (
+                None,
+                "",
+            ):
                 continue
 
-            v = canonical_value(field, v)
+            v = canonical_value(
+                field,
+                v,
+            )
+
             c[str(v)] += 1
 
         denom = sum(c.values())
@@ -265,33 +435,361 @@ def apply_metrics(rows, plan, ctx):
             {
                 "value": k,
                 "count": v,
-                "label": pct(v, denom),
+                "label": pct(
+                    v,
+                    denom,
+                ),
             }
             for k, v in c.most_common()
         ]
 
-        n = (
-            plan.params.get("top")
-            or plan.params.get("limit")
+        return top_n(
+            out,
+            plan.params.get("limit"),
         )
 
-        return top_n(out, n)
+    # -------------------------------------------------
+    # GROUP METRICS
+    # -------------------------------------------------
 
-    # sum_dose
-    if metric == "sum_dose":
-        s = 0.0
+    if metric == "group_sum":
+        return group_sum(rows)
 
-        for r in rows:
-            val = row_get(r, "dose")
+    if metric == "group_duration":
+        return human_since(
+            group_duration(rows)
+        )
 
-            try:
-                s += float(val)
-            except:
-                pass
+    if metric == "group_count":
+        return len(rows)
 
-        if s.is_integer():
-            return int(s)
+    if metric == "main_substance":
+        return main_substance(rows)
 
-        return round(s, 2)
+    if metric == "substances_count":
+        return len(
+            set(
+                ordered_substances(rows)
+            )
+        )
+
+    if metric == "avg_gap":
+        if len(rows) < 2:
+            return "0s"
+
+        rs = ordered_rows(rows)
+        gaps = []
+
+        for i in range(
+            1,
+            len(rs),
+        ):
+            a = row_time_value(
+                rs[i - 1]
+            )
+
+            b = row_time_value(
+                rs[i]
+            )
+
+            if a and b:
+                gaps.append(
+                    b - a
+                )
+
+        if not gaps:
+            return "0s"
+
+        avg = sum(gaps) / len(gaps)
+
+        return human_since(
+            int(avg)
+        )
+
+    # -------------------------------------------------
+    # TIMELINE
+    # -------------------------------------------------
+
+    if metric == "timeline":
+        return rows
+
+    # -------------------------------------------------
+    # SEQUENCE DEFAULT (compact)
+    # -------------------------------------------------
+
+    if metric == "sequence":
+        rs = ordered_rows(rows)
+
+        n = plan.params.get("limit")
+
+        if not isinstance(n, int):
+            n = get(
+                "limits.default",
+                10,
+            )
+
+        if n > 0:
+            rs = rs[-n:]
+
+        seq = [
+            row_substance(r)
+            for r in rs
+            if row_substance(r)
+        ]
+
+        seq = compress_sequence(seq)
+
+        return " -> ".join(seq)
+
+    # -------------------------------------------------
+    # SEQUENCE DOSE
+    # -------------------------------------------------
+
+    if metric == "sequence=dose":
+        rs = ordered_rows(rows)
+
+        n = plan.params.get("limit")
+
+        if not isinstance(n, int):
+            n = get(
+                "limits.default",
+                10,
+            )
+
+        if n > 0:
+            rs = rs[-n:]
+
+        out = []
+
+        for r in rs:
+            sub = row_substance(r)
+
+            if not sub:
+                continue
+
+            dose = row_dose_text(r)
+
+            if dose:
+                out.append(
+                    f"{sub} ({dose})"
+                )
+            else:
+                out.append(sub)
+
+        return " -> ".join(out)
+
+    # -------------------------------------------------
+    # SEQUENCE TIME
+    # -------------------------------------------------
+
+    if metric == "sequence=time":
+        rs = ordered_rows(rows)
+
+        n = plan.params.get("limit")
+
+        if not isinstance(n, int):
+            n = get(
+                "limits.default",
+                10,
+            )
+
+        if n > 0:
+            rs = rs[-n:]
+
+        if not rs:
+            return ""
+
+        out = []
+        prev = None
+
+        for r in rs:
+            sub = row_substance(r)
+
+            if not sub:
+                continue
+
+            now = row_time_value(r)
+
+            if prev is not None:
+                gap = max(
+                    0,
+                    now - prev
+                )
+
+                out.append(
+                    f"+{human_since(gap)}"
+                )
+
+            out.append(sub)
+            prev = now
+
+        return " -> ".join(out)
+
+    # -------------------------------------------------
+    # SEQUENCE PATTERNS
+    # -------------------------------------------------
+
+    if metric == "sequence=patterns":
+        seq = ordered_substances(rows)
+
+        c = Counter()
+
+        for i in range(
+            len(seq) - 1
+        ):
+            pair = (
+                f"{seq[i]} -> "
+                f"{seq[i+1]}"
+            )
+
+            c[pair] += 1
+
+        return top_n(
+            counter_rows(c),
+            plan.params.get("limit"),
+        )
+
+    # -------------------------------------------------
+    # AFTER X
+    # -------------------------------------------------
+
+    if metric.startswith(
+        "sequence=after:"
+    ):
+        target = metric.split(
+            ":",
+            1,
+        )[1].strip().lower()
+
+        seq = ordered_substances(rows)
+
+        c = Counter()
+
+        for i in range(
+            len(seq) - 1
+        ):
+            if seq[i].lower() == target:
+                c[seq[i + 1]] += 1
+
+        return top_n(
+            counter_rows(c),
+            plan.params.get("limit"),
+        )
+
+    # -------------------------------------------------
+    # BEFORE X
+    # -------------------------------------------------
+
+    if metric.startswith(
+        "sequence=before:"
+    ):
+        target = metric.split(
+            ":",
+            1,
+        )[1].strip().lower()
+
+        seq = ordered_substances(rows)
+
+        c = Counter()
+
+        for i in range(
+            1,
+            len(seq),
+        ):
+            if seq[i].lower() == target:
+                c[seq[i - 1]] += 1
+
+        return top_n(
+            counter_rows(c),
+            plan.params.get("limit"),
+        )
+
+# -------------------------------------------------
+    # SEQUENCE ESCALATION
+    # -------------------------------------------------
+
+    if metric == "sequence=escalation":
+        rs = ordered_rows(rows)
+
+        by_sub = {}
+
+        for r in rs:
+            sub = row_substance(r)
+            if not sub:
+                continue
+
+            dose = row_get(r, "dose")
+            unit = row_get(r, "unit")
+
+            if dose is None:
+                continue
+
+            txt = f"{dose} {unit}".strip()
+
+            by_sub.setdefault(sub, []).append(txt)
+
+        out = []
+
+        for sub, vals in by_sub.items():
+            if len(vals) >= 2:
+                out.append(
+                    f"{sub}: " + " -> ".join(vals)
+                )
+
+        return out
+
+    # -------------------------------------------------
+    # SEQUENCE COMBO
+    # -------------------------------------------------
+
+    if metric == "sequence=combo":
+        rs = ordered_rows(rows)
+
+        window = plan.params.get("window")
+
+        if not isinstance(window, int):
+            window = 60 * 60 * 1000   # 1h
+
+        groups = []
+        cur = []
+        prev = None
+
+        for r in rs:
+            sub = row_substance(r)
+            t = row_time_value(r)
+
+            if not sub:
+                continue
+
+            if prev is None:
+                cur = [sub]
+
+            else:
+                if t - prev <= window:
+                    cur.append(sub)
+                else:
+                    groups.append(cur)
+                    cur = [sub]
+
+            prev = t
+
+        if cur:
+            groups.append(cur)
+
+        out = []
+
+        for g in groups:
+            uniq = []
+            seen = set()
+
+            for x in g:
+                if x not in seen:
+                    uniq.append(x)
+                    seen.add(x)
+
+            if len(uniq) >= 2:
+                out.append(" + ".join(uniq))
+
+        return out
 
     return rows

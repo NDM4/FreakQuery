@@ -1,4 +1,4 @@
-# src/tag_registry.py
+# freakquery/tag_registry.py
 
 from freakquery.types import *
 
@@ -29,16 +29,17 @@ REGISTRY = {
         "fn": "random_item",
     },
 
+    # selected group => rows
     "largest": {
         "accept": {GROUP_ROWS},
-        "returns": GROUP_ROWS,
+        "returns": LOG_ROWS,
         "stage": "selector",
         "fn": "largest_group",
     },
 
     "longest": {
         "accept": {GROUP_ROWS},
-        "returns": GROUP_ROWS,
+        "returns": LOG_ROWS,
         "stage": "selector",
         "fn": "longest_group",
     },
@@ -161,21 +162,28 @@ REGISTRY = {
     # =====================================================
 
     "group_sum": {
-        "accept": {GROUP_ROWS},
+        "accept": {LOG_ROWS, GROUP_ROWS},
         "returns": SCALAR,
         "stage": "metric",
         "fn": "group_sum_value",
     },
 
     "group_duration": {
-        "accept": {GROUP_ROWS},
+        "accept": {LOG_ROWS, GROUP_ROWS},
         "returns": SCALAR,
         "stage": "metric",
         "fn": "group_duration_value",
     },
 
+    "group_count": {
+        "accept": {LOG_ROWS, GROUP_ROWS},
+        "returns": SCALAR,
+        "stage": "metric",
+        "fn": "group_count_value",
+    },
+
     "main_substance": {
-        "accept": {GROUP_ROWS},
+        "accept": {LOG_ROWS, GROUP_ROWS},
         "returns": SCALAR,
         "stage": "metric",
         "fn": "main_substance_value",

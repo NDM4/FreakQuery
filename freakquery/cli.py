@@ -1,52 +1,65 @@
 import sys
-from pathlib import Path
+
+from freakquery import (
+    __title__,
+    __version__,
+)
 
 from freakquery.loader import load_logs
-from freakquery.query.executor import execute_tag
-from freakquery.engine import render
+from freakquery.engine import repl
+from freakquery.shell import run_shell
+
+
+def usage():
+    name = __title__.lower()
+
+    print("usage:")
+    print(f"{name} <file.json> <query>")
+    print(f"{name} shell <file.json>")
+    print(f"{name} --version")
 
 
 def main():
     args = sys.argv[1:]
 
-    if not args or args[0] in ("-h", "--help"):
-        print("Usage:")
-        print('  freakquery <json_file> "{{count}}"')
-        print("  freakquery <json_file> <template_file>")
+    if not args:
+        usage()
         return
 
-    if len(args) < 2:
-        print("Error: missing arguments")
-        return
-
-    json_path = args[0]
-    target = args[1]
-
-    data = load_logs(json_path)
-
-    # direct tag mode
-    if "{{" in target and "}}" in target:
-        tag = target.strip()
-
-        if tag.startswith("{{") and tag.endswith("}}"):
-            tag = tag[2:-2]
-
+    if args[0] in (
+        "--version",
+        "-V",
+        "version",
+    ):
         print(
-            execute_tag(
-                tag.strip(),
-                data,
-                None,
-            )
+            f"{__title__} {__version__}"
         )
         return
 
-    # template mode
-    path = Path(target)
+    if args[0] == "shell":
+        if len(args) < 2:
+            print("missing file")
+            return
 
-    if not path.exists():
-        print(f"Error: template file not found: {target}")
+        run_shell(args[1])
         return
 
-    template = path.read_text(encoding="utf-8")
+    if len(args) < 2:
+        print("missing query")
+        return
 
-    print(render(template, data))
+    path = args[0]
+    query = args[1]
+
+    data = load_logs(path)
+
+    out = repl(
+        query,
+        data,
+    )
+
+    print(out)
+
+
+if __name__ == "__main__":
+    main()

@@ -1,9 +1,20 @@
 # freakquery/config.toml
 
 [core]
-name = "freakquery"
-version = "3.0.0"
+name = "FreakQuery"
+version = "3.1.0"
 default_format = "text"
+
+[shell]
+prompt = "fq> "
+banner = true
+help_hint = "Type .help"
+bye_message = "bye"
+confirm_exit = false
+show_os = true
+show_python = false
+clear_mode = "ansi"
+timing_precision = 3
 
 [render]
 separator = ", "
@@ -16,6 +27,12 @@ percent = true
 compact = false
 time = false
 ratio_under_one = "<1%"
+
+[query]
+reverse = false
+
+[grouping]
+binge_gap_hours = 8
 
 [fields]
 substance = ["substance", "substanceName", "name", "drug"]
@@ -66,3 +83,13 @@ transdermal = "transdermal"
 
 "left hand" = "left dorsal hand"
 "right hand" = "right dorsal hand"
+
+[limits]
+default = 10
+rows = 100
+top_substances = 10
+top_routes = 10
+ratio = 8
+sites = 10
+binges = 5
+streaks = 5

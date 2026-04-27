@@ -1,7 +1,16 @@
+# --- Python ---
 __pycache__/
-*.pyc
+*.py[cod]
+*$py.class
 .pytest_cache/
+.venv/
+
+# --- Distribución e Instalación ---
 build/
 dist/
 *.egg-info/
-.venv/
+
+# --- Otros ---
+.DS_Store
+*.log
+

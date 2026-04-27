@@ -1,7 +1,5 @@
 # src/constants.py
 
-VERSION = "v2.6 stable"
-
 # formats
 FMT_JSON = "json"
 FMT_PRETTY = "pretty"
@@ -18,10 +16,12 @@ FORMATS = {
 # params
 PARAM_LIMIT = "limit"
 PARAM_TOP = "top"
+PARAM_REVERSE = "reverse"
 
 PARAMS = {
     PARAM_LIMIT,
     PARAM_TOP,
+    PARAM_REVERSE,
 }
 
 # metric prefixes

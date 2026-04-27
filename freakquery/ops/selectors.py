@@ -1,5 +1,3 @@
-# src/ops/selectors.py
-
 import random
 
 from freakquery.constants import (
@@ -27,6 +25,10 @@ def row_time(row):
         return 0
 
 
+def is_groups(rows):
+    return bool(rows) and isinstance(rows[0], list)
+
+
 def apply_selectors(rows, plan, ctx):
     mode = norm(plan.selector)
 
@@ -38,42 +40,40 @@ def apply_selectors(rows, plan, ctx):
     if not rows:
         return rows
 
-    sel_first = norm(SEL_FIRST)
-    sel_last = norm(SEL_LAST)
-    sel_random = norm(SEL_RANDOM)
-    sel_largest = norm(SEL_LARGEST)
-    sel_longest = norm(SEL_LONGEST)
+    grouped = is_groups(rows)
 
-    # chronological
-    if mode == sel_last:
-        return [max(rows, key=row_time)]
+    # -------------------
+    # GROUP MODE
+    # -------------------
+    if grouped:
 
-    if mode == sel_first:
+        if mode == SEL_FIRST:
+            return rows[0]
+
+        if mode == SEL_LAST:
+            return rows[-1]
+
+        if mode == SEL_RANDOM:
+            return random.choice(rows)
+
+        if mode == SEL_LARGEST:
+            return max(rows, key=group_sum)
+
+        if mode == SEL_LONGEST:
+            return max(rows, key=group_duration)
+
+        return rows
+
+    # -------------------
+    # NORMAL ROW MODE
+    # -------------------
+    if mode == SEL_FIRST:
         return [min(rows, key=row_time)]
 
-    if mode == sel_random:
+    if mode == SEL_LAST:
+        return [max(rows, key=row_time)]
+
+    if mode == SEL_RANDOM:
         return [random.choice(rows)]
-
-    # grouped
-    if mode in (
-        sel_largest,
-        sel_longest,
-    ):
-        groups = rows
-
-        if not isinstance(groups[0], list):
-            return rows
-
-        if mode == sel_largest:
-            return max(
-                groups,
-                key=group_sum,
-            )
-
-        if mode == sel_longest:
-            return max(
-                groups,
-                key=group_duration,
-            )
 
     return rows

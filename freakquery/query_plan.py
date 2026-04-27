@@ -1,3 +1,5 @@
+# freakquery/query_plan.py
+
 from dataclasses import dataclass, field
 
 
@@ -10,6 +12,9 @@ class QueryPlan:
     metrics: list = field(default_factory=list)
     formats: list = field(default_factory=list)
     params: dict = field(default_factory=dict)
+
+    # nuevo
+    unknown: list = field(default_factory=list)
 
     display: dict = field(
         default_factory=lambda: {
