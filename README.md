@@ -21,7 +21,7 @@ Query personal logs with a compact DSL.
 
 FreakQuery lets you search, summarize, and analyze structured logs using short expressions like:
 
-\`\`\`text
+```text
 count
 last
 last|dose
@@ -30,7 +30,7 @@ route=intranasal|ratio=substance
 sequence
 sequence=combo
 binges|largest|group_duration
-\`\`\`
+```
 
 Useful for personal journals, intake logs, habit tracking, experiments, and messy datasets.
 
@@ -40,35 +40,35 @@ Useful for personal journals, intake logs, habit tracking, experiments, and mess
 
 Instead of writing scripts every time you want answers:
 
-\`\`\`text
+```text
 How many times this month?
 What was my last dose?
 Which route do I use most?
 What usually comes after X?
-\`\`\`
+```
 
 Use one-line queries:
 
-\`\`\`text
+```text
 month|count
 last|dose
 ratio=route
 sequence=after:alprazolam
-\`\`\`
+```
 
 ---
 
 # Features
 
-- Compact query language using \`|\`
+- Compact query language using `|`
 - Filters, metrics, ratios, rankings, sequences
 - Human-readable text output
 - JSON output for scripts and automation
-- Supports standard \`logs.json\`
+- Supports standard `logs.json`
 - Supports Journal exports
 - Handles messy aliases automatically
 - CLI + interactive shell
-- Configurable through \`config.toml\`
+- Configurable through `config.toml`
 
 ---
 
@@ -76,51 +76,51 @@ sequence=after:alprazolam
 
 ## Count entries
 
-\`\`\`text
+```text
 count
-\`\`\`
+```
 
 ## Last recorded substance
 
-\`\`\`text
+```text
 last|substance
-\`\`\`
+```
 
 ## Last recorded dose
 
-\`\`\`text
+```text
 last|dose
-\`\`\`
+```
 
 ## Route breakdown
 
-\`\`\`text
+```text
 ratio=route
-\`\`\`
+```
 
 ## Most common substances
 
-\`\`\`text
+```text
 top_substances
-\`\`\`
+```
 
 ## Recent sequence
 
-\`\`\`text
+```text
 sequence
-\`\`\`
+```
 
 ## Combo patterns
 
-\`\`\`text
+```text
 sequence=combo
-\`\`\`
+```
 
 ## Escalation patterns
 
-\`\`\`text
+```text
 sequence=escalation
-\`\`\`
+```
 
 ---
 
@@ -128,7 +128,7 @@ sequence=escalation
 
 ## Standard logs
 
-\`\`\`json
+```json
 [
   {
     "time": 1728855908000,
@@ -138,7 +138,7 @@ sequence=escalation
     "route": "oral"
   }
 ]
-\`\`\`
+```
 
 ## Journal exports
 
@@ -149,27 +149,27 @@ Supported automatically. Ingestions are extracted from exported experiences.
 # Install
 
 Go to the project file and use this command:
-\`\`\`bash
+```bash
 pip install .
-\`\`\`
+```
 
 ---
 
 # CLI
 
-\`\`\`bash
+```bash
 freakquery logs.json count
 freakquery logs.json route=oral|count
 freakquery logs.json "{{last|dose}}"
-\`\`\`
+```
 
 ---
 
 # Interactive shell
 
-\`\`\`bash
+```bash
 freakquery shell logs.json
-\`\`\`
+```
 
 Then run queries directly.
 
@@ -179,15 +179,15 @@ Then run queries directly.
 
 ## Text
 
-\`\`\`text
+```text
 Alprazolam (0.5 mg)
-\`\`\`
+```
 
 ## JSON
 
-\`\`\`text
+```text
 last|json
-\`\`\`
+```
 
 ---
 
@@ -195,8 +195,8 @@ last|json
 
 Customize aliases, defaults, rendering, and behavior in:
 
-\`\`\`text
+```text
 config.toml
-\`\`\`
+```
 
 ---
