@@ -220,6 +220,18 @@ def build_plan(parts):
             )
             continue
 
+# =====================================
+        # time filters
+        # =====================================
+        if low in (
+            "today",
+            "week",
+            "month",
+            "year",
+        ):
+            plan.filters.append(low)
+            continue
+
         # =====================================
         # transforms
         # =====================================

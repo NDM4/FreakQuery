@@ -367,6 +367,52 @@ def apply_metrics(rows, plan, ctx):
             plan.params.get("limit"),
         )
 
+    # SUBSTANCE TOTALS
+
+    if metric == "substance_totals":
+        c = {}
+        counts = {}
+
+        for r in rows:
+            sub = row_substance(r)
+
+            if not sub:
+                continue
+
+            dose = to_mg(
+                row_get(r, "dose"),
+                row_get(r, "unit"),
+            )
+
+            c[sub] = c.get(sub, 0.0) + dose
+            counts[sub] = counts.get(sub, 0) + 1
+
+        out = []
+
+        for sub, total in c.items():
+
+            if float(total).is_integer():
+                total = int(total)
+            else:
+                total = round(total, 2)
+
+            out.append({
+                "substance": sub,
+                "dose": total,
+                "unit": "mg",
+                "count": counts[sub],
+            })
+
+        out.sort(
+            key=lambda x: x["dose"],
+            reverse=True,
+        )
+
+        return top_n(
+            out,
+            plan.params.get("limit"),
+        )
+
     # RATIO
 
     if metric.startswith("ratio="):
