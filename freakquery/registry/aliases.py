@@ -42,16 +42,24 @@ def norm(x):
 
 
 def field_keys(key):
-    fields = get(
-        "fields",
-        {},
-    )
+    fields = get("fields", {})
 
-    k = norm(key)
+    wanted = norm(key)
 
-    for fk, vals in fields.items():
-        if norm(fk) == k:
-            return vals
+    # recorrer grupos
+    for canonical, vals in fields.items():
+
+        names = [canonical]
+
+        if isinstance(vals, list):
+            names.extend(vals)
+        else:
+            names.append(vals)
+
+        # si coincide cualquiera
+        for x in names:
+            if norm(x) == wanted:
+                return names
 
     return [key]
 

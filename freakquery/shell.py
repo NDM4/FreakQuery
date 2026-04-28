@@ -205,6 +205,7 @@ def setup_completion():
         "substances_count",
         "json",
         "reverse",
+        "field=",
         "limit=",
         "ratio=",
         ".help",

@@ -9,7 +9,7 @@ default_format = "text"
 prompt = "fq> "
 banner = true
 help_hint = "Type .help"
-bye_message = "bye"
+bye_message = "fye bye freak"
 confirm_exit = false
 show_os = true
 show_python = false
@@ -35,12 +35,38 @@ reverse = false
 binge_gap_hours = 8
 
 [fields]
-substance = ["substance", "substanceName", "name", "drug"]
+
+substance = [
+  "substance",
+  "substanceName",
+  "name",
+  "drug",
+  "compound"
+]
+
 route = ["route", "roa", "administrationRoute", "adminRoute"]
+
 site = ["site", "administrationSite", "bodySite", "siteName"]
-dose = ["dose", "amount", "quantity"]
-unit = ["unit", "units"]
-time = ["time", "creationDate", "timestamp", "date"]
+
+dose = [
+  "dose",
+  "amount",
+  "qty",
+  "quantity"
+]
+
+unit = [
+  "unit",
+  "units",
+  "measurement"
+]
+
+time = [
+  "time",
+  "creationDate",
+  "timestamp",
+  "date"
+]
 
 [limits]
 default = 10

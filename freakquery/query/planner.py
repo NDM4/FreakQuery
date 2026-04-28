@@ -177,6 +177,13 @@ def build_plan(parts):
                     f"sequence={val}"
                 )
                 continue
+            
+            # -------------------------
+            # universal field extractor
+            # -------------------------
+            if key_l == "field":
+                plan.params["field"] = val
+                continue
 
             # -------------------------
             # universal params

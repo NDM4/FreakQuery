@@ -1,4 +1,4 @@
-# src/outputs/text.py
+# freakquery/outputs/text.py
 
 from datetime import datetime
 
@@ -11,7 +11,15 @@ from freakquery.registry.aliases import (
 from freakquery.config import get
 
 
+# =====================================================
+# HELPERS
+# =====================================================
+
 def clean_number(value):
+    """
+    20.0 -> 20
+    20.50 -> 20.5
+    """
     try:
         n = float(value)
 
@@ -24,6 +32,7 @@ def clean_number(value):
             s = s.rstrip("0").rstrip(".")
 
         return s
+
     except:
         return str(value)
 
@@ -133,6 +142,10 @@ def render_ratio_row(
         p for p in parts if p
     ).strip()
 
+
+# =====================================================
+# MAIN
+# =====================================================
 
 def render_text(
     data,

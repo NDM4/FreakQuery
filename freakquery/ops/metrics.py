@@ -85,12 +85,31 @@ def row_time_value(row):
         return 0
 
 
+def clean_number(value):
+    try:
+        n = float(value)
+
+        if n.is_integer():
+            return str(int(n))
+
+        s = str(n)
+
+        if "." in s:
+            s = s.rstrip("0").rstrip(".")
+
+        return s
+    except:
+        return str(value)
+
+
 def row_dose_text(row):
     dose = row_get(row, "dose")
     unit = row_get(row, "unit")
 
     if dose is None:
         return ""
+
+    dose = clean_number(dose)
 
     if unit:
         unit = canonical_value(
