@@ -1,6 +1,6 @@
 # src/query/contracts.py
 
-from freakquery.types import (
+from freakquery.fq_types import (
     LOG_ROWS,
     GROUP_ROWS,
     TEXT_ROWS,

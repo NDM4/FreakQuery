@@ -1,6 +1,6 @@
 # freakquery/tag_registry.py
 
-from freakquery.types import *
+from freakquery.fq_types import *
 
 REGISTRY = {
 

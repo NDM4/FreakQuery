@@ -1,6 +1,6 @@
 # src/query/validator.py
 
-from freakquery.types import LOG_ROWS, ANY
+from freakquery.fq_types import LOG_ROWS, ANY
 from freakquery.tag_registry import REGISTRY
 
 
