@@ -1,8 +1,17 @@
-## FreakQuery
+
+## v3.2.1
+
+- Expanded substance alias database
+- Added AnodyneWiki + PsychonautWiki aliases
+- Added canonical substance output
+- Added case-insensitive aliases
+- Added greek-prefix alias support
+- Fixed alias collisions and unicode issues
+- Removed non-substance aliases
 
 ## v3.2.0
 
-- Added Journal log export support
+- Added support for Journal exported logs
 - Added centralized alias system
 - Added unit normalization
 - Added JSON alias-aware output
@@ -13,9 +22,13 @@
 - Fixed bugs
 - New config file (config.toml)
 
+# Future Possible Ideas
+- Possible implementation inside Journal app, web version, or REST API.
+- "export" tag to get all the possible statistics given from FreakQuery
+
 ---
 
-# FreakQuery
+## FreakQuery
 
 Query personal logs with a compact DSL.
 

@@ -68,15 +68,13 @@ def alias_map(field):
     )
 
 
-def canonical_field(
-    field,
-    value,
-):
+def canonical_field(field, value):
     mp = alias_map(field)
 
-    v = norm(value)
+    raw = "" if value is None else str(value).strip()
+    v = norm(raw)
 
-    return mp.get(v, v)
+    return mp.get(v, raw)
 
 
 def canonical_route(value):
@@ -123,6 +121,8 @@ def display_value(
         field,
         value,
     )
+    
+    
 
 
 # backward compatibility
