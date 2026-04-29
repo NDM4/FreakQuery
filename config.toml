@@ -32,7 +32,7 @@ ratio_under_one = "<1%"
 reverse = false
 
 [grouping]
-binge_gap_hours = 8
+binge_gap_hours = 4
 
 [fields]
 
