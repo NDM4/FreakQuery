@@ -213,3 +213,13 @@ config.toml
 ```
 
 ---
+
+# Tag documentation
+
+For a detailed guide on how FreakQuery tags work and how to create your own tags, see:
+
+```text
+docs/TAGS.md
+```
+
+---
