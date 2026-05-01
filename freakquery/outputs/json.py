@@ -4,20 +4,8 @@ import json
 
 from freakquery.registry.aliases import (
     display_value,
-    norm,
-    field_keys,
 )
-
-
-def row_get(row, key):
-    for wanted in field_keys(key):
-        nw = norm(wanted)
-
-        for real in row.keys():
-            if norm(real) == nw:
-                return row.get(real)
-
-    return None
+from freakquery.rows import row_get
 
 
 def normalize_obj(obj):

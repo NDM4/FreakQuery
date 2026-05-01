@@ -1,12 +1,10 @@
 # freakquery/ops/metrics.py
 
 from collections import Counter
-import time
+from datetime import datetime
 
 from freakquery.registry.aliases import (
-    norm,
     canonical_value,
-    field_keys,
     same_value,
 )
 
@@ -18,6 +16,14 @@ from freakquery.ops.grouping import (
 
 from freakquery.units import to_mg
 from freakquery.config import get
+from freakquery.rows import (
+    clean_number,
+    human_since,
+    now_ms,
+    ordered_rows,
+    row_get,
+    row_time,
+)
 
 
 # =====================================================
@@ -50,20 +56,6 @@ def top_n(items, n):
     return items
 
 
-def row_get(row, key):
-    if not isinstance(row, dict):
-        return None
-
-    for wanted in field_keys(key):
-        nw = norm(wanted)
-
-        for real in row.keys():
-            if norm(real) == nw:
-                return row.get(real)
-
-    return None
-
-
 def row_substance(row):
     v = row_get(row, "substance")
 
@@ -74,32 +66,6 @@ def row_substance(row):
         "substance",
         v,
     )
-
-
-def row_time_value(row):
-    v = row_get(row, "time")
-
-    try:
-        return int(v)
-    except:
-        return 0
-
-
-def clean_number(value):
-    try:
-        n = float(value)
-
-        if n.is_integer():
-            return str(int(n))
-
-        s = str(n)
-
-        if "." in s:
-            s = s.rstrip("0").rstrip(".")
-
-        return s
-    except:
-        return str(value)
 
 
 def row_dose_text(row):
@@ -119,13 +85,6 @@ def row_dose_text(row):
         return f"{dose} {unit}"
 
     return str(dose)
-
-
-def ordered_rows(rows):
-    return sorted(
-        rows,
-        key=lambda r: row_time_value(r)
-    )
 
 
 def ordered_substances(rows):
@@ -183,31 +142,32 @@ def compress_sequence(items):
     return out
 
 
-def human_since(ms):
-    seconds = ms // 1000
+def dose_mg(row):
+    return to_mg(
+        row_get(row, "dose"),
+        row_get(row, "unit"),
+    )
 
-    mins, sec = divmod(seconds, 60)
-    hrs, mins = divmod(mins, 60)
-    days, hrs = divmod(hrs, 24)
-    years, days = divmod(days, 365)
-    months, days = divmod(days, 30)
 
-    if years:
-        return f"{years}y {months}mo"
+def month_key(row):
+    ts = row_time(row)
 
-    if months:
-        return f"{months}mo {days}d"
+    if not ts:
+        return None
 
-    if days:
-        return f"{days}d {hrs}h"
+    try:
+        return datetime.fromtimestamp(ts / 1000).strftime("%Y-%m")
+    except (OverflowError, OSError, ValueError):
+        return None
 
-    if hrs:
-        return f"{hrs}h {mins}m"
 
-    if mins:
-        return f"{mins}m {sec}s"
+def year_key(row):
+    key = month_key(row)
 
-    return f"{sec}s"
+    if key:
+        return key[:4]
+
+    return None
 
 
 # =====================================================
@@ -259,14 +219,10 @@ def apply_metrics(rows, plan, ctx):
         if not rows:
             return ""
 
-        ts = row_time_value(rows[-1])
-
-        now = int(
-            time.time() * 1000
-        )
+        ts = row_time(rows[-1])
 
         return human_since(
-            max(0, now - ts)
+            max(0, now_ms() - ts)
         )
 
     if metric == "dose":
@@ -291,10 +247,7 @@ def apply_metrics(rows, plan, ctx):
         s = 0.0
 
         for r in rows:
-            s += to_mg(
-                row_get(r, "dose"),
-                row_get(r, "unit"),
-            )
+            s += dose_mg(r)
 
         if s.is_integer():
             return int(s)
@@ -379,10 +332,7 @@ def apply_metrics(rows, plan, ctx):
             if not sub:
                 continue
 
-            dose = to_mg(
-                row_get(r, "dose"),
-                row_get(r, "unit"),
-            )
+            dose = dose_mg(r)
 
             c[sub] = c.get(sub, 0.0) + dose
             counts[sub] = counts.get(sub, 0) + 1
@@ -481,6 +431,24 @@ def apply_metrics(rows, plan, ctx):
             )
         )
 
+    if metric in ("trend_month", "trend_year"):
+        key_fn = month_key if metric == "trend_month" else year_key
+        c = Counter()
+
+        for r in rows:
+            key = key_fn(r)
+
+            if key:
+                c[key] += 1
+
+        return [
+            {
+                "value": key,
+                "count": c[key],
+            }
+            for key in sorted(c)
+        ]
+
     if metric == "avg_gap":
         if len(rows) < 2:
             return "0s"
@@ -492,11 +460,11 @@ def apply_metrics(rows, plan, ctx):
             1,
             len(rs),
         ):
-            a = row_time_value(
+            a = row_time(
                 rs[i - 1]
             )
 
-            b = row_time_value(
+            b = row_time(
                 rs[i]
             )
 
@@ -572,7 +540,7 @@ def apply_metrics(rows, plan, ctx):
             if not sub:
                 continue
 
-            now = row_time_value(r)
+            now = row_time(r)
 
             if prev is not None:
                 out.append(
@@ -595,6 +563,47 @@ def apply_metrics(rows, plan, ctx):
             c[
                 f"{seq[i]} -> {seq[i+1]}"
             ] += 1
+
+        return counter_rows(c)
+
+    if metric == "sequence=combo":
+        by_time = {}
+
+        for r in ordered_rows(rows):
+            ts = row_time(r)
+            sub = row_substance(r)
+
+            if ts and sub:
+                by_time.setdefault(ts, set()).add(sub)
+
+        c = Counter()
+
+        for substances in by_time.values():
+            if len(substances) > 1:
+                c[" + ".join(sorted(substances))] += 1
+
+        return counter_rows(c)
+
+    if metric == "sequence=escalation":
+        last_dose = {}
+        c = Counter()
+
+        for r in ordered_rows(rows):
+            sub = row_substance(r)
+
+            if not sub:
+                continue
+
+            dose = dose_mg(r)
+            prev = last_dose.get(sub)
+
+            if prev is not None and dose > prev:
+                c[
+                    f"{sub} {clean_number(prev)}mg -> "
+                    f"{clean_number(dose)}mg"
+                ] += 1
+
+            last_dose[sub] = dose
 
         return counter_rows(c)
 

@@ -168,6 +168,18 @@ OPERATORS = {
         "kind": "metric",
     },
 
+    "avg_gap": {
+        "in": LOG_ROWS,
+        "out": SCALAR,
+        "kind": "metric",
+    },
+
+    "substances_count": {
+        "in": LOG_ROWS,
+        "out": SCALAR,
+        "kind": "metric",
+    },
+
     "top_substances": {
         "in": LOG_ROWS,
         "out": TEXT_ROWS,

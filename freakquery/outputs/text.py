@@ -4,48 +4,15 @@ from datetime import datetime
 
 from freakquery.registry.aliases import (
     display_value,
-    norm,
-    field_keys,
 )
 
 from freakquery.config import get
+from freakquery.rows import clean_number, row_get
 
 
 # =====================================================
 # HELPERS
 # =====================================================
-
-def clean_number(value):
-    """
-    20.0 -> 20
-    20.50 -> 20.5
-    """
-    try:
-        n = float(value)
-
-        if n.is_integer():
-            return str(int(n))
-
-        s = str(n)
-
-        if "." in s:
-            s = s.rstrip("0").rstrip(".")
-
-        return s
-
-    except:
-        return str(value)
-
-
-def row_get(row, key):
-    for wanted in field_keys(key):
-        nw = norm(wanted)
-
-        for real in row.keys():
-            if norm(real) == nw:
-                return row.get(real)
-
-    return None
 
 
 def format_time(ms, mode):

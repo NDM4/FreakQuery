@@ -139,6 +139,20 @@ REGISTRY = {
         "fn": "substance_totals_rows",
     },
 
+    "avg_gap": {
+        "accept": {LOG_ROWS},
+        "returns": SCALAR,
+        "stage": "metric",
+        "fn": "avg_gap_value",
+    },
+
+    "substances_count": {
+        "accept": {LOG_ROWS},
+        "returns": SCALAR,
+        "stage": "metric",
+        "fn": "substances_count_value",
+    },
+
     # =====================================================
     # TIMELINE / TEXT
     # =====================================================

@@ -1,3 +1,2 @@
 include README.md
 include config.toml
-recursive-include src *.py

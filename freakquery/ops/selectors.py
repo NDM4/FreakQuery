@@ -1,5 +1,6 @@
 import random
 
+from freakquery.rows import row_time
 from freakquery.constants import (
     SEL_FIRST,
     SEL_LAST,
@@ -16,13 +17,6 @@ from freakquery.ops.grouping import (
 
 def norm(x):
     return str(x).strip().lower()
-
-
-def row_time(row):
-    try:
-        return int(row.get("time", 0))
-    except:
-        return 0
 
 
 def is_groups(rows):

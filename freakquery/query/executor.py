@@ -3,13 +3,10 @@ import difflib
 
 from freakquery.config import get
 from freakquery.tag_registry import REGISTRY
+from freakquery.rows import clean_number, row_get
 
 from freakquery.query.parser import parse_tag
-from freakquery.registry.aliases import (
-    apply_aliases,
-    field_keys,
-    norm,
-)
+from freakquery.registry.aliases import apply_aliases
 from freakquery.query.precedence import normalize_parts
 from freakquery.query.validator import validate_parts
 from freakquery.query.planner import build_plan
@@ -56,33 +53,6 @@ def empty_plan(plan):
         plan.metrics,
         plan.formats,
     ])
-
-
-def clean_number(value):
-    try:
-        n = float(value)
-
-        if n.is_integer():
-            return str(int(n))
-
-        s = str(n).rstrip("0").rstrip(".")
-        return s
-    except:
-        return str(value)
-
-
-def row_get(row, key):
-    if not isinstance(row, dict):
-        return None
-
-    for wanted in field_keys(key):
-        nw = norm(wanted)
-
-        for real in row.keys():
-            if norm(real) == nw:
-                return row.get(real)
-
-    return None
 
 
 # =====================================================

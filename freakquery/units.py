@@ -3,8 +3,8 @@
 MASS_UNITS = {
     "ug",
     "mcg",
-    "μg",
-    "µg",
+    "\u03bcg",
+    "\u00b5g",
     "mg",
     "g",
 }
@@ -26,10 +26,10 @@ def to_mg(value, unit):
 
     try:
         x = float(value)
-    except:
+    except (TypeError, ValueError):
         return 0.0
 
-    if u in ("ug", "mcg", "μg", "µg"):
+    if u in ("ug", "mcg", "\u03bcg", "\u00b5g"):
         return x / 1000
 
     if u == "mg":

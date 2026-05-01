@@ -2,45 +2,8 @@
 
 from datetime import datetime
 
-from freakquery.registry.aliases import (
-    norm,
-    field_keys,
-    same_value,
-)
-
-
-# =====================================================
-# HELPERS
-# =====================================================
-
-def row_get(row, key):
-    for wanted in field_keys(key):
-        nw = norm(wanted)
-
-        for real in row.keys():
-            if norm(real) == nw:
-                return row.get(real)
-
-    return None
-
-
-def row_time(row):
-    try:
-        return int(row_get(row, "time"))
-    except:
-        return 0
-
-
-def row_dt(row):
-    ts = row_time(row)
-
-    if not ts:
-        return None
-
-    try:
-        return datetime.fromtimestamp(ts / 1000)
-    except:
-        return None
+from freakquery.registry.aliases import same_value
+from freakquery.rows import row_datetime, row_get
 
 
 def now_dt(ctx):
@@ -49,7 +12,7 @@ def now_dt(ctx):
             return datetime.fromtimestamp(
                 int(ctx.now_ms) / 1000
             )
-        except:
+        except (TypeError, ValueError):
             pass
 
     return datetime.now()
@@ -97,7 +60,7 @@ def apply_filters(rows, plan, ctx):
 
     for row in rows:
         ok = True
-        dt = row_dt(row)
+        dt = row_datetime(row)
 
         for f in plan.filters:
             fl = str(f).strip().lower()
