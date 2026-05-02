@@ -123,7 +123,7 @@ def sample_rows():
 def documented_queries():
     text = DOC.read_text(encoding="utf-8")
 
-    return re.findall(r"^\| `([^`]+)` \|", text, flags=re.MULTILINE)
+    return re.findall(r"^- `([^`]+)` - ", text, flags=re.MULTILINE)
 
 
 class DocumentedCombinationTests(unittest.TestCase):
