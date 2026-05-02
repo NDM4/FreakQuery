@@ -1,0 +1,509 @@
+# Useful FreakQuery Tag Combinations
+
+This guide collects practical, interesting, and high-signal FreakQuery tag combinations. Each entry is a complete query you can run in the CLI, the shell, or inside template braces.
+
+The combinations are grouped by intent: quick answers, filters, ratios, sequences, grouping, rendering, JSON output, and larger analysis recipes.
+
+## Fast Answers
+
+| Query | What it does |
+| --- | --- |
+| `count` | Counts all loaded rows. |
+| `last` | Shows the most recent row by timestamp. |
+| `first` | Shows the earliest row by timestamp. |
+| `random` | Shows one random row from the dataset. |
+| `last|dose` | Returns the dose text for the most recent row. |
+| `first|dose` | Returns the dose text for the earliest row. |
+| `last|substance` | Returns the most recent substance. |
+| `first|substance` | Returns the earliest substance. |
+| `last|since` | Shows how long it has been since the most recent row. |
+| `since` | Shows how long it has been since the last row in the current row order. |
+| `sum_dose` | Converts mass doses to milligrams and sums them. |
+| `avg_gap` | Shows the average time gap between consecutive rows. |
+| `substances_count` | Counts distinct substances in the current result set. |
+| `timeline` | Renders rows as a timeline-style list. |
+| `timeline|limit=5` | Shows the first five rows after normal ordering and transforms. |
+| `timeline|reverse` | Shows the timeline in reverse row order. |
+| `timeline|reverse=false` | Shows the timeline without reversing it. |
+| `timeline|top=10` | Shows up to ten timeline rows using the top alias for limit. |
+| `last|time=iso` | Shows the most recent row with an ISO timestamp. |
+| `last|time=date` | Shows the most recent row with only the date. |
+| `last|time` | Shows the most recent row with clock time. |
+| `first|time=iso` | Shows the earliest row with an ISO timestamp. |
+| `random|time=iso` | Shows a random row with an ISO timestamp. |
+| `last|route=true` | Shows the most recent row including route. |
+| `last|site=true` | Shows the most recent row including site. |
+| `last|route=true|site=true` | Shows the most recent row including route and site. |
+| `last|dose=false` | Shows the most recent row without dose text. |
+| `last|unit=false` | Shows the most recent row with dose but without unit text. |
+| `last|parens=false` | Shows the most recent row without wrapping details in parentheses. |
+| `last|labels=false` | Shows only the rendered details for the most recent row. |
+
+## Time Windows
+
+| Query | What it does |
+| --- | --- |
+| `today|count` | Counts rows from today. |
+| `week|count` | Counts rows from the current ISO week. |
+| `month|count` | Counts rows from the current month. |
+| `year|count` | Counts rows from the current year. |
+| `today|last` | Shows the latest row from today. |
+| `week|last` | Shows the latest row from this week. |
+| `month|last` | Shows the latest row from this month. |
+| `year|last` | Shows the latest row from this year. |
+| `today|last|dose` | Returns the latest dose from today. |
+| `week|last|dose` | Returns the latest dose from this week. |
+| `month|last|dose` | Returns the latest dose from this month. |
+| `year|last|dose` | Returns the latest dose from this year. |
+| `today|last|substance` | Returns the latest substance from today. |
+| `week|last|substance` | Returns the latest substance from this week. |
+| `month|last|substance` | Returns the latest substance from this month. |
+| `year|last|substance` | Returns the latest substance from this year. |
+| `today|top_substances` | Ranks substances used today. |
+| `week|top_substances` | Ranks substances used this week. |
+| `month|top_substances` | Ranks substances used this month. |
+| `year|top_substances` | Ranks substances used this year. |
+| `today|ratio=route` | Shows today's route breakdown. |
+| `week|ratio=route` | Shows this week's route breakdown. |
+| `month|ratio=route` | Shows this month's route breakdown. |
+| `year|ratio=route` | Shows this year's route breakdown. |
+| `today|sum_dose` | Sums today's mass doses in milligrams. |
+| `week|sum_dose` | Sums this week's mass doses in milligrams. |
+| `month|sum_dose` | Sums this month's mass doses in milligrams. |
+| `year|sum_dose` | Sums this year's mass doses in milligrams. |
+| `today|sequence` | Shows today's substance sequence. |
+| `week|sequence` | Shows this week's substance sequence. |
+| `month|sequence` | Shows this month's substance sequence. |
+| `year|sequence` | Shows this year's substance sequence. |
+| `today|timeline|time=iso` | Shows today's timeline with ISO timestamps. |
+| `week|timeline|time=date` | Shows this week's timeline with dates. |
+| `month|timeline|route=true` | Shows this month's timeline with routes. |
+| `year|timeline|site=true` | Shows this year's timeline with sites. |
+
+## Field Filters
+
+| Query | What it does |
+| --- | --- |
+| `substance=Alprazolam|count` | Counts Alprazolam rows. |
+| `substance=Caffeine|count` | Counts Caffeine rows. |
+| `substance=Ketamine|count` | Counts Ketamine rows. |
+| `substance=Delta-8-THC|count` | Counts Delta-8-THC rows. |
+| `route=oral|count` | Counts oral rows. |
+| `route=intranasal|count` | Counts intranasal rows. |
+| `route=intravenous|count` | Counts intravenous rows. |
+| `route=smoked|count` | Counts smoked rows. |
+| `route=sublingual|count` | Counts sublingual rows. |
+| `site=left nostril|count` | Counts rows at the left nostril site. |
+| `site=right nostril|count` | Counts rows at the right nostril site. |
+| `unit=mg|count` | Counts rows with milligram units. |
+| `unit=ug|count` | Counts rows with microgram units. |
+| `unit=g|count` | Counts rows with gram units. |
+| `dose=0.5|count` | Counts rows whose dose value is 0.5. |
+| `amount=0.5|count` | Counts rows whose dose alias amount is 0.5. |
+| `roa=oral|count` | Counts rows using the route alias roa. |
+| `administrationRoute=oral|count` | Counts rows using the Journal route field alias. |
+| `substanceName=Caffeine|count` | Counts Caffeine rows using the Journal substance field alias. |
+| `route=oral|last` | Shows the latest oral row. |
+| `route=intranasal|last` | Shows the latest intranasal row. |
+| `site=left nostril|last` | Shows the latest row at the left nostril site. |
+| `substance=Alprazolam|last|dose` | Returns the latest Alprazolam dose. |
+| `substance=Caffeine|last|dose` | Returns the latest Caffeine dose. |
+| `substance=Ketamine|last|dose` | Returns the latest Ketamine dose. |
+| `route=oral|last|substance` | Returns the latest oral substance. |
+| `route=intranasal|last|substance` | Returns the latest intranasal substance. |
+| `site=right nostril|last|substance` | Returns the latest substance at the right nostril site. |
+| `substance=Alprazolam|sum_dose` | Sums Alprazolam dose in milligrams. |
+| `substance=Caffeine|sum_dose` | Sums Caffeine dose in milligrams. |
+| `substance=Ketamine|sum_dose` | Sums Ketamine dose in milligrams. |
+| `route=oral|sum_dose` | Sums mass doses for oral rows. |
+| `route=intranasal|sum_dose` | Sums mass doses for intranasal rows. |
+| `site=left nostril|sum_dose` | Sums mass doses at the left nostril site. |
+| `unit=ug|sum_dose` | Sums microgram rows after conversion to milligrams. |
+| `unit=g|sum_dose` | Sums gram rows after conversion to milligrams. |
+| `substance=Alprazolam|ratio=route` | Shows route breakdown for Alprazolam. |
+| `substance=Caffeine|ratio=route` | Shows route breakdown for Caffeine. |
+| `route=oral|ratio=substance` | Shows substance breakdown for oral rows. |
+| `route=intranasal|ratio=substance` | Shows substance breakdown for intranasal rows. |
+| `site=left nostril|ratio=substance` | Shows substance breakdown for left nostril rows. |
+| `today|substance=Alprazolam|count` | Counts today's Alprazolam rows. |
+| `week|route=oral|count` | Counts oral rows this week. |
+| `month|route=intranasal|count` | Counts intranasal rows this month. |
+| `year|substance=Caffeine|sum_dose` | Sums this year's Caffeine dose in milligrams. |
+
+## Rankings And Totals
+
+| Query | What it does |
+| --- | --- |
+| `top_substances` | Ranks substances by row count. |
+| `top_substances|limit=3` | Shows the top three substances. |
+| `top_substances|limit=5` | Shows the top five substances. |
+| `top_substances|top=10` | Shows the top ten substances. |
+| `top_substances|count=true` | Shows top substances with bare counts. |
+| `top_substances|parens=false` | Shows top substances without count parentheses. |
+| `top_substances|labels=false` | Shows only counts for the substance ranking. |
+| `top_routes` | Ranks routes by row count. |
+| `top_routes|limit=3` | Shows the top three routes. |
+| `top_routes|count=true` | Shows top routes with bare counts. |
+| `top_routes|parens=false` | Shows top routes without count parentheses. |
+| `sites` | Ranks administration sites by row count. |
+| `sites|limit=3` | Shows the top three sites. |
+| `sites|count=true` | Shows sites with bare counts. |
+| `sites|parens=false` | Shows sites without count parentheses. |
+| `substance_totals` | Ranks substances by total converted mass dose. |
+| `substance_totals|limit=3` | Shows the top three substances by total dose. |
+| `substance_totals|dose=false` | Shows substance total rows without dose details. |
+| `substance_totals|unit=false` | Shows substance total rows without unit text. |
+| `substance_totals|parens=false` | Shows substance total details without parentheses. |
+| `route=oral|top_substances` | Ranks substances among oral rows. |
+| `route=intranasal|top_substances` | Ranks substances among intranasal rows. |
+| `site=left nostril|top_substances` | Ranks substances at the left nostril site. |
+| `substance=Alprazolam|top_routes` | Ranks routes for Alprazolam. |
+| `substance=Caffeine|top_routes` | Ranks routes for Caffeine. |
+| `substance=Ketamine|sites` | Ranks sites for Ketamine. |
+| `today|top_routes` | Ranks today's routes. |
+| `week|top_routes` | Ranks this week's routes. |
+| `month|top_routes` | Ranks this month's routes. |
+| `year|top_routes` | Ranks this year's routes. |
+| `today|sites` | Ranks today's sites. |
+| `week|sites` | Ranks this week's sites. |
+| `month|sites` | Ranks this month's sites. |
+| `year|sites` | Ranks this year's sites. |
+| `today|substance_totals` | Shows today's substance dose totals. |
+| `week|substance_totals` | Shows this week's substance dose totals. |
+| `month|substance_totals` | Shows this month's substance dose totals. |
+| `year|substance_totals` | Shows this year's substance dose totals. |
+
+## Ratios And Breakdowns
+
+| Query | What it does |
+| --- | --- |
+| `ratio=route` | Shows route share by count. |
+| `ratio=substance` | Shows substance share by count. |
+| `ratio=unit` | Shows unit share by count. |
+| `ratio=site` | Shows site share by count. |
+| `ratio=dose` | Shows dose-value share by count. |
+| `ratio=administrationRoute` | Shows route share through the Journal route alias. |
+| `ratio=substanceName` | Shows substance share through the Journal substance alias. |
+| `ratio=amount` | Shows dose-value share through the amount alias. |
+| `ratio=measurement` | Shows unit share through the measurement alias. |
+| `ratio=bodySite` | Shows site share through the bodySite alias. |
+| `ratio=route|limit=3` | Shows the top three route shares. |
+| `ratio=substance|limit=5` | Shows the top five substance shares. |
+| `ratio=site|limit=3` | Shows the top three site shares. |
+| `ratio=route|count=true` | Shows route share with raw counts. |
+| `ratio=substance|count=true` | Shows substance share with raw counts. |
+| `ratio=site|count=true` | Shows site share with raw counts. |
+| `ratio=route|percent=false` | Shows route labels without percentages. |
+| `ratio=substance|percent=false` | Shows substance labels without percentages. |
+| `ratio=site|percent=false` | Shows site labels without percentages. |
+| `ratio=route|labels=false` | Shows only route percentages. |
+| `ratio=substance|labels=false` | Shows only substance percentages. |
+| `ratio=route|count=true|percent=false` | Shows route labels and counts only. |
+| `ratio=substance|count=true|percent=false` | Shows substance labels and counts only. |
+| `ratio=route|labels=false|count=true` | Shows route percentages and counts without labels. |
+| `route=oral|ratio=substance` | Shows substance share inside oral rows. |
+| `route=intranasal|ratio=substance` | Shows substance share inside intranasal rows. |
+| `substance=Alprazolam|ratio=route` | Shows route share for Alprazolam. |
+| `substance=Caffeine|ratio=unit` | Shows unit share for Caffeine. |
+| `site=right nostril|ratio=substance` | Shows substance share for right nostril rows. |
+| `today|ratio=substance` | Shows today's substance share. |
+| `week|ratio=substance` | Shows this week's substance share. |
+| `month|ratio=substance` | Shows this month's substance share. |
+| `year|ratio=substance` | Shows this year's substance share. |
+| `today|ratio=unit` | Shows today's unit share. |
+| `week|ratio=site` | Shows this week's site share. |
+| `month|route=oral|ratio=substance` | Shows this month's oral substance share. |
+| `year|substance=Alprazolam|ratio=route` | Shows this year's Alprazolam route share. |
+
+## Sequences And Patterns
+
+| Query | What it does |
+| --- | --- |
+| `sequence` | Shows the substance sequence in time order. |
+| `sequence=dose` | Shows the substance sequence with dose text. |
+| `sequence=time` | Shows the substance sequence with gaps between rows. |
+| `sequence=patterns` | Counts adjacent substance transitions. |
+| `sequence=combo` | Counts substances that happened at the same timestamp. |
+| `sequence=escalation` | Counts cases where a later dose was higher than the previous dose for the same substance. |
+| `sequence=after:Alprazolam` | Counts what tends to appear after Alprazolam. |
+| `sequence=before:Alprazolam` | Counts what tends to appear before Alprazolam. |
+| `sequence=after:Caffeine` | Counts what tends to appear after Caffeine. |
+| `sequence=before:Caffeine` | Counts what tends to appear before Caffeine. |
+| `sequence=after:Ketamine` | Counts what tends to appear after Ketamine. |
+| `sequence=before:Ketamine` | Counts what tends to appear before Ketamine. |
+| `sequence=after:Delta-8-THC` | Counts what tends to appear after Delta-8-THC. |
+| `sequence=before:Delta-8-THC` | Counts what tends to appear before Delta-8-THC. |
+| `sequence=patterns|limit=5` | Shows the top five adjacent transitions. |
+| `sequence=combo|limit=5` | Shows the top five same-time combinations. |
+| `sequence=escalation|limit=5` | Shows the top five dose escalation patterns. |
+| `sequence=after:Alprazolam|limit=5` | Shows the top five substances after Alprazolam. |
+| `sequence=before:Caffeine|limit=5` | Shows the top five substances before Caffeine. |
+| `route=oral|sequence` | Shows the oral-only substance sequence. |
+| `route=intranasal|sequence` | Shows the intranasal-only substance sequence. |
+| `site=left nostril|sequence` | Shows the left-nostril-only substance sequence. |
+| `substance=Alprazolam|sequence=dose` | Shows Alprazolam events with dose text. |
+| `substance=Caffeine|sequence=dose` | Shows Caffeine events with dose text. |
+| `substance=Ketamine|sequence=time` | Shows Ketamine events with time gaps. |
+| `today|sequence` | Shows today's sequence. |
+| `week|sequence=dose` | Shows this week's sequence with dose text. |
+| `month|sequence=time` | Shows this month's sequence with gaps. |
+| `year|sequence=patterns` | Counts this year's adjacent transitions. |
+| `today|sequence=combo` | Counts today's same-time combinations. |
+| `week|sequence=escalation` | Counts this week's escalation patterns. |
+| `month|sequence=after:Alprazolam` | Counts what followed Alprazolam this month. |
+| `year|sequence=before:Caffeine` | Counts what preceded Caffeine this year. |
+| `route=oral|sequence=patterns` | Counts adjacent transitions among oral rows. |
+| `route=intranasal|sequence=after:Ketamine` | Counts what followed Ketamine among intranasal rows. |
+| `site=right nostril|sequence=before:Ketamine` | Counts what preceded Ketamine at the right nostril site. |
+| `substance=Alprazolam|sequence=escalation` | Counts Alprazolam dose escalations. |
+
+## Binges And Streaks
+
+| Query | What it does |
+| --- | --- |
+| `binges|count` | Counts detected binge groups. |
+| `streaks|count` | Counts detected calendar-day streak groups. |
+| `binges|largest` | Shows rows from the binge with the largest converted dose sum. |
+| `binges|longest` | Shows rows from the longest-duration binge. |
+| `streaks|largest` | Shows rows from the streak with the largest converted dose sum. |
+| `streaks|longest` | Shows rows from the longest calendar-day streak. |
+| `binges|random` | Shows rows from a random binge group. |
+| `streaks|random` | Shows rows from a random streak group. |
+| `binges|largest|group_sum` | Returns the converted dose sum for the largest binge. |
+| `binges|largest|group_duration` | Returns the duration of the largest binge. |
+| `binges|largest|group_count` | Counts rows inside the largest binge. |
+| `binges|largest|main_substance` | Returns the most common substance inside the largest binge. |
+| `binges|largest|substances_count` | Counts distinct substances inside the largest binge. |
+| `binges|largest|avg_gap` | Shows the average gap inside the largest binge. |
+| `binges|longest|group_sum` | Returns the converted dose sum for the longest binge. |
+| `binges|longest|group_duration` | Returns the duration of the longest binge. |
+| `binges|longest|group_count` | Counts rows inside the longest binge. |
+| `binges|longest|main_substance` | Returns the most common substance inside the longest binge. |
+| `streaks|longest|group_duration` | Returns the duration of the longest streak. |
+| `streaks|longest|group_count` | Counts rows inside the longest streak. |
+| `streaks|longest|main_substance` | Returns the most common substance inside the longest streak. |
+| `streaks|longest|substances_count` | Counts distinct substances inside the longest streak. |
+| `streaks|largest|group_sum` | Returns the converted dose sum for the largest streak. |
+| `streaks|largest|group_count` | Counts rows inside the largest streak. |
+| `binges|largest|sequence` | Shows the substance sequence inside the largest binge. |
+| `binges|largest|sequence=dose` | Shows the largest binge sequence with dose text. |
+| `binges|largest|sequence=time` | Shows the largest binge sequence with gaps. |
+| `binges|largest|sequence=patterns` | Counts adjacent transitions inside the largest binge. |
+| `binges|largest|ratio=route` | Shows route share inside the largest binge. |
+| `binges|largest|ratio=substance` | Shows substance share inside the largest binge. |
+| `binges|largest|top_substances` | Ranks substances inside the largest binge. |
+| `binges|largest|top_routes` | Ranks routes inside the largest binge. |
+| `binges|largest|sites` | Ranks sites inside the largest binge. |
+| `binges|largest|timeline|time=iso` | Shows the largest binge timeline with ISO timestamps. |
+| `binges|largest|timeline|route=true|site=true` | Shows the largest binge timeline with route and site. |
+| `binges|largest|timeline|limit=3` | Shows three rows from the largest binge timeline. |
+| `streaks|longest|sequence` | Shows the sequence inside the longest streak. |
+| `streaks|longest|sequence=dose` | Shows the longest streak sequence with dose text. |
+| `streaks|longest|ratio=substance` | Shows substance share inside the longest streak. |
+| `streaks|longest|top_substances` | Ranks substances inside the longest streak. |
+| `today|binges|count` | Counts binge groups detected today. |
+| `week|binges|count` | Counts binge groups detected this week. |
+| `month|binges|count` | Counts binge groups detected this month. |
+| `year|binges|count` | Counts binge groups detected this year. |
+| `week|streaks|count` | Counts streak groups this week. |
+| `month|streaks|count` | Counts streak groups this month. |
+| `year|streaks|count` | Counts streak groups this year. |
+| `substance=Alprazolam|binges|count` | Counts Alprazolam-only binge groups. |
+| `route=intranasal|binges|count` | Counts intranasal-only binge groups. |
+| `route=oral|streaks|count` | Counts oral-only streak groups. |
+
+## Rendering Controls
+
+| Query | What it does |
+| --- | --- |
+| `timeline|time=iso` | Shows all rendered rows with ISO timestamps. |
+| `timeline|time=date` | Shows all rendered rows with date-only timestamps. |
+| `timeline|time` | Shows all rendered rows with clock time. |
+| `timeline|route=true` | Shows route information in timeline rows. |
+| `timeline|site=true` | Shows site information in timeline rows. |
+| `timeline|route=true|site=true` | Shows both route and site in timeline rows. |
+| `timeline|dose=false` | Hides dose text from timeline rows. |
+| `timeline|unit=false` | Shows dose values without unit text. |
+| `timeline|labels=false` | Hides substance labels in timeline rows. |
+| `timeline|parens=false` | Removes parentheses around details. |
+| `timeline|compact=true` | Joins row parts using the configured separator style. |
+| `timeline|sep=/` | Uses slash as the rendered detail separator. |
+| `timeline|sep=+` | Uses plus as the rendered detail separator. |
+| `timeline|limit=5|time=iso|route=true` | Shows five rows with ISO time and route. |
+| `timeline|limit=5|time=date|site=true` | Shows five rows with dates and sites. |
+| `timeline|limit=5|route=true|site=true|parens=false` | Shows five detailed rows without parentheses. |
+| `last|time=iso|route=true|site=true` | Shows the latest row with time, route, and site. |
+| `first|time=iso|route=true|site=true` | Shows the earliest row with time, route, and site. |
+| `route=oral|timeline|time=iso|route=true` | Shows oral rows with ISO timestamps and route text. |
+| `route=intranasal|timeline|time=iso|site=true` | Shows intranasal rows with ISO timestamps and site text. |
+| `substance=Alprazolam|timeline|dose=true|unit=true` | Shows Alprazolam rows with dose and unit details. |
+| `substance=Caffeine|timeline|dose=false|time=date` | Shows Caffeine rows by date without dose details. |
+| `ratio=route|count=true|percent=true` | Shows route ratios with both percentages and counts. |
+| `ratio=route|count=true|percent=false` | Shows route ratios with counts but no percentages. |
+| `ratio=route|labels=false|percent=true` | Shows route percentages without labels. |
+| `top_substances|count=true|parens=false` | Shows substance ranking with plain counts. |
+| `top_routes|count=true|parens=false` | Shows route ranking with plain counts. |
+| `sites|count=true|parens=false` | Shows site ranking with plain counts. |
+| `substance_totals|unit=false|parens=false` | Shows substance totals without unit text or parentheses. |
+
+## JSON Output
+
+| Query | What it does |
+| --- | --- |
+| `count|json` | Returns the total count as JSON. |
+| `last|json` | Returns the latest row as JSON. |
+| `first|json` | Returns the earliest row as JSON. |
+| `random|json` | Returns a random row as JSON. |
+| `last|dose|json` | Returns the latest dose text as JSON. |
+| `last|substance|json` | Returns the latest substance as JSON. |
+| `sum_dose|json` | Returns the converted dose sum as JSON. |
+| `avg_gap|json` | Returns the average gap as JSON. |
+| `substances_count|json` | Returns distinct substance count as JSON. |
+| `timeline|limit=3|json` | Returns three rendered row objects as JSON. |
+| `timeline|time=iso|limit=3|json` | Returns three row objects as JSON after applying render flags. |
+| `top_substances|json` | Returns substance rankings as JSON. |
+| `top_substances|limit=5|json` | Returns the top five substances as JSON. |
+| `top_routes|json` | Returns route rankings as JSON. |
+| `sites|json` | Returns site rankings as JSON. |
+| `substance_totals|json` | Returns converted substance totals as JSON. |
+| `ratio=route|json` | Returns route ratio rows as JSON. |
+| `ratio=substance|json` | Returns substance ratio rows as JSON. |
+| `ratio=site|json` | Returns site ratio rows as JSON. |
+| `sequence=patterns|json` | Returns adjacent sequence patterns as JSON. |
+| `sequence=combo|json` | Returns same-time combinations as JSON. |
+| `sequence=escalation|json` | Returns escalation patterns as JSON. |
+| `sequence=after:Alprazolam|json` | Returns after-Alprazolam counts as JSON. |
+| `sequence=before:Caffeine|json` | Returns before-Caffeine counts as JSON. |
+| `trend_month|json` | Returns monthly trend counts as JSON. |
+| `trend_year|json` | Returns yearly trend counts as JSON. |
+| `today|top_substances|json` | Returns today's substance ranking as JSON. |
+| `week|ratio=route|json` | Returns this week's route ratio as JSON. |
+| `month|substance_totals|json` | Returns this month's substance totals as JSON. |
+| `year|sequence=patterns|json` | Returns this year's adjacent transitions as JSON. |
+| `binges|largest|json` | Returns rows from the largest binge as JSON. |
+| `binges|largest|group_sum|json` | Returns largest binge dose sum as JSON. |
+| `binges|largest|sequence=patterns|json` | Returns largest binge transitions as JSON. |
+| `streaks|longest|json` | Returns rows from the longest streak as JSON. |
+| `streaks|longest|ratio=substance|json` | Returns longest streak substance ratio as JSON. |
+
+## Field Extraction
+
+| Query | What it does |
+| --- | --- |
+| `last|field=substance` | Extracts the substance field from the latest row. |
+| `last|field=substanceName` | Extracts substance through the Journal field alias. |
+| `last|field=drug` | Extracts substance through the drug field alias. |
+| `last|field=compound` | Extracts substance through the compound field alias. |
+| `last|field=dose` | Extracts dose from the latest row. |
+| `last|field=amount` | Extracts dose through the amount alias. |
+| `last|field=quantity` | Extracts dose through the quantity alias. |
+| `last|field=unit` | Extracts unit from the latest row. |
+| `last|field=units` | Extracts unit through the units alias. |
+| `last|field=measurement` | Extracts unit through the measurement alias. |
+| `last|field=route` | Extracts route from the latest row. |
+| `last|field=roa` | Extracts route through the roa alias. |
+| `last|field=administrationRoute` | Extracts route through the Journal route alias. |
+| `last|field=site` | Extracts site from the latest row. |
+| `last|field=administrationSite` | Extracts site through the Journal site alias. |
+| `last|field=bodySite` | Extracts site through the bodySite alias. |
+| `last|field=time` | Extracts timestamp from the latest row. |
+| `last|field=timestamp` | Extracts timestamp through the timestamp alias. |
+| `last|field=creationDate` | Extracts timestamp through the creationDate alias. |
+| `last|field=notes` | Extracts notes from the latest row when present. |
+| `first|field=substance` | Extracts substance from the earliest row. |
+| `first|field=dose` | Extracts dose from the earliest row. |
+| `first|field=route` | Extracts route from the earliest row. |
+| `random|field=substance` | Extracts substance from a random row. |
+| `random|field=dose` | Extracts dose from a random row. |
+| `substance=Alprazolam|last|field=dose` | Extracts the latest Alprazolam dose value. |
+| `route=oral|last|field=substance` | Extracts the latest oral substance. |
+| `site=left nostril|last|field=substance` | Extracts the latest substance at the left nostril site. |
+| `today|last|field=substance` | Extracts today's latest substance. |
+| `week|last|field=dose` | Extracts this week's latest dose value. |
+| `month|last|field=route` | Extracts this month's latest route. |
+| `year|last|field=site` | Extracts this year's latest site. |
+| `binges|largest|field=substance` | Extracts the first substance from the largest binge group. |
+| `binges|largest|field=dose` | Extracts the first dose from the largest binge group. |
+| `streaks|longest|field=substance` | Extracts the first substance from the longest streak group. |
+
+## Trends
+
+| Query | What it does |
+| --- | --- |
+| `trend_month` | Counts rows by month. |
+| `trend_year` | Counts rows by year. |
+| `trend_month|limit=6` | Shows up to six monthly trend rows. |
+| `trend_year|limit=5` | Shows up to five yearly trend rows. |
+| `trend_month|count=true` | Shows monthly trend rows with bare counts. |
+| `trend_year|count=true` | Shows yearly trend rows with bare counts. |
+| `trend_month|parens=false` | Shows monthly trend rows without count parentheses. |
+| `trend_year|parens=false` | Shows yearly trend rows without count parentheses. |
+| `substance=Alprazolam|trend_month` | Counts Alprazolam rows by month. |
+| `substance=Caffeine|trend_month` | Counts Caffeine rows by month. |
+| `substance=Ketamine|trend_month` | Counts Ketamine rows by month. |
+| `route=oral|trend_month` | Counts oral rows by month. |
+| `route=intranasal|trend_month` | Counts intranasal rows by month. |
+| `site=left nostril|trend_month` | Counts left nostril rows by month. |
+| `substance=Alprazolam|trend_year` | Counts Alprazolam rows by year. |
+| `substance=Caffeine|trend_year` | Counts Caffeine rows by year. |
+| `route=oral|trend_year` | Counts oral rows by year. |
+| `route=intranasal|trend_year` | Counts intranasal rows by year. |
+| `today|trend_month` | Counts today's rows by month, usually one month bucket. |
+| `week|trend_month` | Counts this week's rows by month bucket. |
+| `month|trend_month` | Counts this month's rows by month bucket. |
+| `year|trend_month` | Counts this year's rows by month bucket. |
+| `year|trend_year` | Counts this year's rows by year bucket. |
+| `year|route=oral|trend_month` | Counts this year's oral rows by month. |
+| `year|substance=Caffeine|trend_month` | Counts this year's Caffeine rows by month. |
+
+## Larger Analysis Recipes
+
+| Query | What it does |
+| --- | --- |
+| `month|top_substances|limit=5` | Finds the five most common substances this month. |
+| `month|ratio=route|count=true` | Shows this month's route mix with counts. |
+| `month|substance_totals|limit=5` | Finds this month's highest total dose substances. |
+| `month|sequence=patterns|limit=10` | Finds this month's most common transitions. |
+| `month|sequence=combo|limit=10` | Finds this month's most common same-time combinations. |
+| `month|sequence=escalation|limit=10` | Finds this month's most common dose escalations. |
+| `month|avg_gap` | Shows this month's average gap between rows. |
+| `month|substances_count` | Counts distinct substances this month. |
+| `week|top_substances|limit=5` | Finds this week's most common substances. |
+| `week|ratio=route|count=true` | Shows this week's route mix with counts. |
+| `week|substance_totals|limit=5` | Finds this week's highest total dose substances. |
+| `week|sequence=patterns|limit=10` | Finds this week's most common transitions. |
+| `week|sequence=combo|limit=10` | Finds this week's most common same-time combinations. |
+| `week|sequence=escalation|limit=10` | Finds this week's most common dose escalations. |
+| `week|avg_gap` | Shows this week's average gap between rows. |
+| `week|substances_count` | Counts distinct substances this week. |
+| `year|top_substances|limit=10` | Finds this year's ten most common substances. |
+| `year|ratio=route|count=true` | Shows this year's route mix with counts. |
+| `year|substance_totals|limit=10` | Finds this year's highest total dose substances. |
+| `year|sequence=patterns|limit=10` | Finds this year's most common transitions. |
+| `year|sequence=combo|limit=10` | Finds this year's most common same-time combinations. |
+| `year|sequence=escalation|limit=10` | Finds this year's most common dose escalations. |
+| `year|avg_gap` | Shows this year's average gap between rows. |
+| `year|substances_count` | Counts distinct substances this year. |
+| `substance=Alprazolam|avg_gap` | Shows average gap between Alprazolam rows. |
+| `substance=Caffeine|avg_gap` | Shows average gap between Caffeine rows. |
+| `substance=Ketamine|avg_gap` | Shows average gap between Ketamine rows. |
+| `route=oral|avg_gap` | Shows average gap between oral rows. |
+| `route=intranasal|avg_gap` | Shows average gap between intranasal rows. |
+| `site=left nostril|avg_gap` | Shows average gap between left nostril rows. |
+| `substance=Alprazolam|substances_count` | Confirms distinct substance count inside Alprazolam rows. |
+| `route=oral|substances_count` | Counts distinct substances taken orally. |
+| `route=intranasal|substances_count` | Counts distinct substances taken intranasally. |
+| `site=left nostril|substances_count` | Counts distinct substances at the left nostril site. |
+| `route=oral|timeline|limit=10|time=iso|route=true` | Audits recent oral rows with timestamps and route. |
+| `route=intranasal|timeline|limit=10|time=iso|site=true` | Audits recent intranasal rows with timestamps and site. |
+| `substance=Alprazolam|timeline|limit=10|time=iso|route=true|site=true` | Audits recent Alprazolam rows with full context. |
+| `substance=Caffeine|timeline|limit=10|time=date|dose=true` | Audits recent Caffeine rows by date with dose. |
+| `substance=Ketamine|timeline|limit=10|time=iso|route=true|site=true` | Audits recent Ketamine rows with full context. |
+| `binges|largest|timeline|time=iso|route=true|site=true|json` | Exports the largest binge rows as JSON with context flags. |
+| `streaks|longest|timeline|time=iso|route=true|site=true|json` | Exports the longest streak rows as JSON with context flags. |
+| `month|binges|largest|sequence=dose` | Shows dose sequence inside this month's largest binge. |
+| `month|binges|largest|ratio=substance|count=true` | Shows substance mix inside this month's largest binge. |
+| `month|binges|largest|group_duration` | Shows duration of this month's largest binge. |
+| `year|streaks|longest|sequence=dose` | Shows dose sequence inside this year's longest streak. |
+| `year|streaks|longest|ratio=substance|count=true` | Shows substance mix inside this year's longest streak. |
+| `year|streaks|longest|group_duration` | Shows duration of this year's longest streak. |
