@@ -6,7 +6,6 @@ from freakquery.tag_registry import REGISTRY
 from freakquery.rows import clean_number, row_get
 
 from freakquery.query.parser import parse_tag
-from freakquery.registry.aliases import apply_aliases
 from freakquery.query.precedence import normalize_parts
 from freakquery.query.validator import validate_parts
 from freakquery.query.planner import build_plan
@@ -80,7 +79,6 @@ def execute_tag(tag, data, ctx):
 
     # parse
     parts = parse_tag(raw)
-    parts = apply_aliases(parts)
     parts = normalize_parts(parts)
 
     ok, err = validate_parts(parts)

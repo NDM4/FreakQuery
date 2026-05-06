@@ -1,33 +1,3 @@
-
-## v3.2.1
-
-- Expanded substance alias database
-- Added AnodyneWiki + PsychonautWiki aliases
-- Added canonical substance output
-- Added case-insensitive aliases
-- Added greek-prefix alias support
-- Fixed alias collisions and unicode issues
-- Removed non-substance aliases
-
-## v3.2.0
-
-- Added support for Journal exported logs
-- Added centralized alias system
-- Added unit normalization
-- Added JSON alias-aware output
-
-## v3.1.0
-- Added interactive shell
-- Added new metrics (sequence, timeline...)
-- Fixed bugs
-- New config file (config.toml)
-
-# Future Possible Ideas
-- Possible implementation inside Journal app, web version, or REST API.
-- "export" tag to get all the possible statistics given from FreakQuery
-
----
-
 ## FreakQuery
 
 Query personal logs with a compact DSL.
@@ -39,7 +9,7 @@ count
 last
 last|dose
 route=oral|count
-route=intranasal|ratio=substance
+ratio=route
 sequence
 sequence=combo
 binges|largest|group_duration
@@ -71,73 +41,35 @@ sequence=after:alprazolam
 
 ---
 
-# Features
+# Install
 
-- Compact query language using `|`
-- Filters, metrics, ratios, rankings, sequences
-- Human-readable text output
-- JSON output for scripts and automation
-- Supports standard `logs.json`
-- Supports Journal exports
-- Handles messy aliases automatically
-- CLI + interactive shell
-- Configurable through `config.toml`
+```bash
+pip install .
+```
+
+Requires Python 3.9+.
 
 ---
 
-# Examples
+# Quick Start
 
-## Count entries
+```bash
+# Count all entries
+freakquery logs.json count
 
-```text
-count
-```
+# Last recorded dose
+freakquery logs.json "last|dose"
 
-## Last recorded substance
+# Route breakdown
+freakquery logs.json "ratio=route"
 
-```text
-last|substance
-```
-
-## Last recorded dose
-
-```text
-last|dose
-```
-
-## Route breakdown
-
-```text
-ratio=route
-```
-
-## Most common substances
-
-```text
-top_substances
-```
-
-## Recent sequence
-
-```text
-sequence
-```
-
-## Combo patterns
-
-```text
-sequence=combo
-```
-
-## Escalation patterns
-
-```text
-sequence=escalation
+# Interactive shell
+freakquery shell logs.json
 ```
 
 ---
 
-# Input formats
+# Input Formats
 
 ## Standard logs
 
@@ -159,67 +91,139 @@ Supported automatically. Ingestions are extracted from exported experiences.
 
 ---
 
-# Install
+# Query Reference
 
-Go to the project file and use this command:
-```bash
-pip install .
-```
+## Filters
+
+Reduce rows by time window or field value.
+
+| Filter | Description |
+|--------|-------------|
+| `today` | Rows from today |
+| `week` | Rows from this ISO week |
+| `month` | Rows from this month |
+| `year` | Rows from this year |
+| `substance=X` | Rows where substance matches X |
+| `route=X` | Rows where route matches X |
+| `site=X` | Rows where site matches X |
+| `unit=X` | Rows where unit matches X |
+
+Filters can be combined: `month|route=oral|count`
+
+## Selectors
+
+Pick one row or group.
+
+| Selector | Description |
+|----------|-------------|
+| `first` | Earliest row by time |
+| `last` | Most recent row by time |
+| `random` | One random row |
+| `largest` | Group with highest total dose |
+| `longest` | Group with longest duration |
+
+## Groups
+
+Group rows into clusters.
+
+| Group | Description |
+|-------|-------------|
+| `binges` | Rows within a configurable gap (default 8h) |
+| `streaks` | Consecutive calendar-day entries |
+
+## Metrics
+
+Produce a result from rows.
+
+| Metric | Description |
+|--------|-------------|
+| `count` | Total row count |
+| `dose` | Dose text of the last row |
+| `substance` | Substance name of the last row |
+| `since` | Time since the last entry |
+| `sum_dose` | Total dose in mg (mass only) |
+| `top_substances` | Substances ranked by count |
+| `top_routes` | Routes ranked by count |
+| `sites` | Sites ranked by count |
+| `substance_totals` | Substances ranked by total dose |
+| `avg_gap` | Average time gap between rows |
+| `substances_count` | Number of distinct substances |
+| `timeline` | Rows in time order |
+| `sequence` | Substance sequence |
+| `trend_month` | Row counts by month |
+| `trend_year` | Row counts by year |
+| `group_sum` | Total dose in a group |
+| `group_duration` | Duration of a group |
+| `group_count` | Row count in a group |
+| `main_substance` | Most common substance in a group |
+
+## Dynamic Metrics
+
+| Syntax | Description |
+|--------|-------------|
+| `ratio=FIELD` | Breakdown by field with percentages |
+| `sequence=dose` | Sequence with dose text |
+| `sequence=time` | Sequence with time gaps |
+| `sequence=patterns` | Adjacent transition counts |
+| `sequence=combo` | Same-time combination counts |
+| `sequence=escalation` | Dose escalation counts |
+| `sequence=after:X` | What follows substance X |
+| `sequence=before:X` | What precedes substance X |
+
+## Parameters
+
+| Parameter | Description |
+|-----------|-------------|
+| `limit=N` or `top=N` | Limit list results |
+| `reverse` | Reverse result order |
+| `field=NAME` | Extract a single field value |
+| `json` | Output as JSON |
+
+## Render Flags
+
+| Flag | Description |
+|------|-------------|
+| `dose=true/false` | Show/hide dose |
+| `unit=true/false` | Show/hide unit |
+| `route=true` | Show route |
+| `site=true` | Show site |
+| `time=iso` | ISO timestamp |
+| `time=date` | Date only |
+| `time` | Clock time |
+| `parens=true/false` | Wrap details in parentheses |
+| `labels=true/false` | Show/hide labels |
+| `count=true` | Show raw counts |
+| `percent=true/false` | Show/hide percentages |
+| `compact=true` | Compact output |
 
 ---
 
-# CLI
-
-```bash
-freakquery logs.json count
-freakquery logs.json route=oral|count
-freakquery logs.json "{{last|dose}}"
-```
-
----
-
-# Interactive shell
-
-```bash
-freakquery shell logs.json
-```
-
-Then run queries directly.
-
----
-
-# Output modes
-
-## Text
+# Shell Commands
 
 ```text
-Alprazolam (0.5 mg)
-```
-
-## JSON
-
-```text
-last|json
+.help          show help
+.reload        reload data from file
+.clear         clear the screen
+.version       show version
+.rows          show row count
+.path          show loaded file path
+.pwd           show current directory
+.cd [dir]      change directory
+.history       show command history
+.stats         show quick stats overview
+.last          re-run last query
+.time <query>  run query with timing
+.watch <query> run query repeatedly
+.source        show file info
+.quit / .exit   exit shell
 ```
 
 ---
 
 # Config
 
-Customize aliases, defaults, rendering, and behavior in:
+Customize aliases, defaults, rendering, and behavior in `config.toml`.
 
-```text
-config.toml
-```
+See `docs/TAGS.md` for the tag creation guide.
 
----
-
-# Tag documentation
-
-For a detailed guide on how FreakQuery tags work and how to create your own tags, see:
-
-```text
-docs/TAGS.md
-```
-
----
+See `docs/USEFUL_TAG_COMBINATIONS.md` for a complete list of working queries.

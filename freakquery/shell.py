@@ -81,7 +81,7 @@ def os_label():
 
     try:
         return os.uname().sysname
-    except:
+    except Exception:
         return sys.platform
 
 
@@ -133,7 +133,7 @@ def setup_history():
         readline.read_history_file(
             history_file()
         )
-    except:
+    except (OSError, FileNotFoundError):
         pass
 
     try:
@@ -145,7 +145,7 @@ def setup_history():
                 )
             )
         )
-    except:
+    except (ValueError, OSError):
         pass
 
 
@@ -163,7 +163,7 @@ def save_history():
         readline.write_history_file(
             history_file()
         )
-    except:
+    except (OSError, FileNotFoundError):
         pass
 
 
@@ -203,11 +203,17 @@ def setup_completion():
         "main_substance",
         "avg_gap",
         "substances_count",
+        "sequence=dose",
+        "sequence=time",
+        "sequence=patterns",
+        "sequence=combo",
+        "sequence=escalation",
+        "ratio=substance",
+        "ratio=route",
+        "field=",
         "json",
         "reverse",
-        "field=",
         "limit=",
-        "ratio=",
         ".help",
         ".reload",
         ".clear",
@@ -244,7 +250,7 @@ def setup_completion():
         readline.parse_and_bind(
             "tab: complete"
         )
-    except:
+    except Exception:
         pass
 
 
@@ -350,18 +356,48 @@ def run_query(q, data):
 def help_text():
     safe_print()
     safe_print("Commands:")
-    safe_print(".help .reload .clear .version")
-    safe_print(".rows .path .pwd .cd")
-    safe_print(".history .stats .time")
-    safe_print(".last .watch .source")
-    safe_print(".quit .exit exit quit")
+    safe_print("  .help          show this help")
+    safe_print("  .reload        reload data from file")
+    safe_print("  .clear         clear the screen")
+    safe_print("  .version       show version")
+    safe_print("  .rows          show row count")
+    safe_print("  .path          show loaded file path")
+    safe_print("  .pwd           show current directory")
+    safe_print("  .cd [dir]      change directory")
+    safe_print("  .history       show command history")
+    safe_print("  .stats         show quick stats overview")
+    safe_print("  .last          re-run last query")
+    safe_print("  .time <query>  run query with timing")
+    safe_print("  .watch <query> run query repeatedly")
+    safe_print("  .source        show file info")
+    safe_print("  .quit / .exit  exit shell")
     safe_print()
-    safe_print("Examples:")
-    safe_print("binges|largest")
-    safe_print("binges|longest|group_duration")
-    safe_print("streaks|longest|group_duration")
-    safe_print("route=oral|count")
-    safe_print("top_substances")
+    safe_print("Filters:")
+    safe_print("  today, week, month, year")
+    safe_print("  substance=..., route=..., site=...")
+    safe_print()
+    safe_print("Groups:     binges, streaks")
+    safe_print("Selectors:  first, last, random, largest, longest")
+    safe_print()
+    safe_print("Metrics:")
+    safe_print("  count, dose, substance, since, sum_dose")
+    safe_print("  top_substances, top_routes, sites")
+    safe_print("  substance_totals, avg_gap, substances_count")
+    safe_print("  timeline, sequence, trend_month, trend_year")
+    safe_print("  group_sum, group_duration, group_count, main_substance")
+    safe_print()
+    safe_print("Dynamic metrics:")
+    safe_print("  ratio=<field>        breakdown by field")
+    safe_print("  sequence=dose        sequence with doses")
+    safe_print("  sequence=time        sequence with gaps")
+    safe_print("  sequence=patterns    transition patterns")
+    safe_print("  sequence=combo       same-time combinations")
+    safe_print("  sequence=escalation dose escalation patterns")
+    safe_print("  sequence=after:X    what follows X")
+    safe_print("  sequence=before:X   what precedes X")
+    safe_print()
+    safe_print("Parameters: limit=N, top=N, reverse, field=<name>")
+    safe_print("Formats: json")
     safe_print()
 
 
@@ -546,7 +582,7 @@ def run_shell(path):
                         st.st_mtime
                     )
                 )
-            except:
+            except OSError:
                 safe_print(path)
 
             continue

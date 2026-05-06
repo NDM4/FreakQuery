@@ -32,12 +32,12 @@ def parse_value(v):
     try:
         if "." not in raw:
             return int(raw)
-    except:
+    except (TypeError, ValueError):
         pass
 
     try:
         return float(raw)
-    except:
+    except (TypeError, ValueError):
         pass
 
     return raw

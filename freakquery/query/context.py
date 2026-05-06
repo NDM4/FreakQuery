@@ -14,10 +14,10 @@ class Context:
             time.time() * 1000
         )
 
-        # random consistente entre tags
+        # consistent random across tags
         self.memory = {}
 
-        # configuración futura
+        # future configuration
         self.settings = {
             "default_limit": None,
             "pretty_numbers": True,

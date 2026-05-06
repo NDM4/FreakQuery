@@ -1,7 +1,7 @@
 # src/cache.py
 
-import hashlib
 import json
+from typing import Any
 
 
 class Cache:
@@ -15,20 +15,18 @@ class Cache:
             default=str,
         )
 
-        return hashlib.md5(
-            raw.encode("utf-8")
-        ).hexdigest()
+        return str(hash(raw))
 
-    def get(self, *parts):
+    def get(self, *parts) -> Any:
         key = self._key(*parts)
         return self.store.get(key)
 
-    def set(self, value, *parts):
+    def set(self, value, *parts) -> Any:
         key = self._key(*parts)
         self.store[key] = value
         return value
 
-    def remember(self, fn, *parts):
+    def remember(self, fn, *parts) -> Any:
         cached = self.get(*parts)
 
         if cached is not None:

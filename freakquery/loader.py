@@ -7,7 +7,7 @@ from freakquery.registry.aliases import (
 )
 
 
-def load_logs(path):
+def load_logs(path: str) -> list:
     with open(
         path,
         "r",
@@ -31,7 +31,7 @@ def load_logs(path):
     return []
 
 
-def load_journal(data):
+def load_journal(data: dict) -> list:
     rows = []
 
     for exp in data.get(
@@ -46,7 +46,7 @@ def load_journal(data):
 
             try:
                 row_id = int(tm)
-            except:
+            except (TypeError, ValueError):
                 row_id = len(rows) + 1
 
             row = {

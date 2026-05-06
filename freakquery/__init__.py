@@ -21,7 +21,7 @@ def _resolve_source(source):
     return source
 
 
-def render(template, source):
+def render(template: str, source) -> str:
     """
     Render template containing {{tags}}.
 
@@ -33,7 +33,7 @@ def render(template, source):
     return _render(template, data)
 
 
-def query(tag, source):
+def query(tag: str, source) -> str:
     """
     Execute query/tag.
     """

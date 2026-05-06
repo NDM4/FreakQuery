@@ -79,26 +79,20 @@ def build_binges(rows):
     )
 
     groups = []
-    cur = []
+    cur = [rows[0]]
 
-    for i in range(len(rows) - 1):
-        a = rows[i]
-        b = rows[i + 1]
-
-        diff = b["time"] - a["time"]
+    for i in range(1, len(rows)):
+        diff = rows[i]["time"] - rows[i - 1]["time"]
 
         if diff <= max_gap:
-            if not cur:
-                cur = [a]
-
-            cur.append(b)
-
+            cur.append(rows[i])
         else:
-            if cur:
+            if len(cur) >= 2:
                 groups.append(cur)
-                cur = []
 
-    if cur:
+            cur = [rows[i]]
+
+    if len(cur) >= 2:
         groups.append(cur)
 
     return groups

@@ -175,18 +175,19 @@ def year_key(row):
 # =====================================================
 
 def resolve_metric(plan):
-    for m in plan.metrics:
-        low = str(m).strip().lower()
+    if not plan.metrics:
+        return None
 
-        if low.startswith("ratio="):
-            return m
+    m = plan.metrics[0]
+    low = str(m).strip().lower()
 
-        if low.startswith("sequence="):
-            return m
+    if low.startswith("ratio="):
+        return m
 
-        return low
+    if low.startswith("sequence="):
+        return m
 
-    return None
+    return low
 
 
 # =====================================================

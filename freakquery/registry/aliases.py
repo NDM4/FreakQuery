@@ -121,16 +121,10 @@ def same_value(
     )
 
 
-def display_value(
-    field,
-    value,
-):
-    return canonical_value(
-        field,
-        value,
-    )
-    
-    
+display_value = canonical_value
+
+
+
 
 
 # backward compatibility
@@ -140,7 +134,3 @@ def normalize_route(v):
 
 def normalize_site(v):
     return canonical_site(v)
-
-
-def apply_aliases(parts):
-    return parts

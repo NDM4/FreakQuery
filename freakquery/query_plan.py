@@ -13,7 +13,7 @@ class QueryPlan:
     formats: list = field(default_factory=list)
     params: dict = field(default_factory=dict)
 
-    # nuevo
+    # unknown tags
     unknown: list = field(default_factory=list)
 
     display: dict = field(

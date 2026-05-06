@@ -10,18 +10,18 @@ MASS_UNITS = {
 }
 
 
-def clean_unit(unit):
+def clean_unit(unit) -> str:
     if unit is None:
         return ""
 
     return str(unit).strip().lower()
 
 
-def is_mass_unit(unit):
+def is_mass_unit(unit) -> bool:
     return clean_unit(unit) in MASS_UNITS
 
 
-def to_mg(value, unit):
+def to_mg(value, unit) -> float:
     u = clean_unit(unit)
 
     try:
@@ -41,7 +41,7 @@ def to_mg(value, unit):
     return x
 
 
-def normalize_custom_unit(unit):
+def normalize_custom_unit(unit) -> str:
     u = clean_unit(unit)
 
     # naive singularization

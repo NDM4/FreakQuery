@@ -20,7 +20,7 @@ def format_time(ms, mode):
         dt = datetime.fromtimestamp(
             int(ms) / 1000
         )
-    except:
+    except (OverflowError, OSError, ValueError):
         return str(ms)
 
     mode = str(mode).lower()

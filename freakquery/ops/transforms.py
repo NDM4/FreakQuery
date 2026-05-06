@@ -10,7 +10,7 @@ def apply_transforms(rows, plan, ctx):
     if reverse is None:
         reverse = get(
             "query.reverse",
-            True,
+            False,
         )
 
     if reverse:

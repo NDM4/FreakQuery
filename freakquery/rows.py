@@ -1,10 +1,13 @@
+from __future__ import annotations
+
 import time
 from datetime import datetime
+from typing import Any
 
 from freakquery.registry.aliases import field_keys, norm
 
 
-def row_get(row, key, default=None):
+def row_get(row, key, default=None) -> Any:
     if not isinstance(row, dict):
         return default
 
@@ -18,14 +21,14 @@ def row_get(row, key, default=None):
     return default
 
 
-def row_time(row):
+def row_time(row) -> int:
     try:
         return int(row_get(row, "time", 0))
     except (TypeError, ValueError):
         return 0
 
 
-def row_datetime(row):
+def row_datetime(row) -> datetime | None:
     ts = row_time(row)
 
     if not ts:
@@ -37,7 +40,7 @@ def row_datetime(row):
         return None
 
 
-def clean_number(value):
+def clean_number(value) -> str:
     try:
         n = float(value)
     except (TypeError, ValueError):
@@ -49,7 +52,7 @@ def clean_number(value):
     return str(n).rstrip("0").rstrip(".")
 
 
-def human_since(ms):
+def human_since(ms) -> str:
     seconds = int(ms) // 1000
 
     mins, sec = divmod(seconds, 60)
@@ -76,9 +79,9 @@ def human_since(ms):
     return f"{sec}s"
 
 
-def now_ms():
+def now_ms() -> int:
     return int(time.time() * 1000)
 
 
-def ordered_rows(rows):
+def ordered_rows(rows) -> list:
     return sorted(rows, key=row_time)

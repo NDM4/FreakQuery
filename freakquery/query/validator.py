@@ -8,24 +8,8 @@ def validate_parts(parts):
     current = LOG_ROWS
 
     for part in parts:
-
         if "=" in part:
-            key = part.split("=", 1)[0]
-
-            if key in (
-                "substance",
-                "route",
-                "limit",
-                "top",
-                "ratio",
-            ):
-                if current != LOG_ROWS:
-                    return (
-                        False,
-                        f"{key}= requires "
-                        f"log_rows, got {current}"
-                    )
-                continue
+            continue
 
         meta = REGISTRY.get(part)
 
